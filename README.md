@@ -18,8 +18,21 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see
-the result. The whole site is one page (`app/page.tsx`) composed from the
-sections in `components/pelican/`.
+the result. The site is one page (`app/page.tsx`) composed from the sections in
+`components/sections/`, plus a privacy page.
+
+## Editing content
+
+All business content lives in **`data/site.ts`**: phone, email, services,
+prices, FAQ, service towns, reviews, photos and social links. Components read
+from it, so most edits never touch a component.
+
+- **Photos.** Put files in `public/photos/` and set the matching `src` in
+  `data/site.ts`. Empty photo slots show a labelled placeholder frame.
+- **Reviews.** Paste real reviews into `reviews`. Until then the section shows
+  labelled slots.
+- **Slots.** `SHOW_CONTENT_SLOTS` controls the labelled placeholders. Set it to
+  `false` to hide every "goes here" label before launch.
 
 ## Quote form email
 
@@ -30,9 +43,11 @@ comments in `.env.example` for how delivery addresses are chosen.
 
 ## Project layout
 
-- `app/page.tsx` — the one-page site, assembled from section components
-- `app/api/pelican-quote/` — quote form delivery (Resend)
-- `components/pelican/` — page sections (hero, services, pricing, FAQ, …)
-- `components/layout/` — site header and footer
-- `data/ventures.ts` — business copy (name, tagline, descriptions)
-- `lib/colors.ts` — brand palette
+- `data/site.ts` - every piece of business content and the slot switch
+- `app/page.tsx` - the one-page site, assembled from section components
+- `app/api/pelican-quote/` - quote form delivery (Resend)
+- `app/opengraph-image.tsx` - link preview image, generated at build
+- `components/sections/` - page sections (hero, services, pricing, FAQ, ...)
+- `components/layout/` - header, footer and the mobile call/text bar
+- `components/ui/` - photo slot and before/after slider
+- `app/globals.css` - color tokens (light and dark) and shared styles

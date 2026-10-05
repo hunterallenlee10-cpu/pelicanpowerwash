@@ -1,112 +1,166 @@
 @import 'tailwindcss';
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+/*
+ * Design tokens. Colors come from the logo: navy shirt, teal water, white.
+ * Light is the default; dark follows the visitor's system setting.
+ *
+ * Shape rule, used everywhere: buttons and chips are full pills, inputs are
+ * rounded-xl, panels and photos are rounded-2xl.
+ */
+:root {
+  --canvas: #f4f7f9;
+  --surface: #ffffff;
+  --surface-2: #e9f0f4;
+  --ink: #0e2440;
+  --ink-2: #4b5d70;
+  --line: #d6e0e7;
+  --accent: #0a7585;
+  --accent-hover: #086674;
+  --on-accent: #ffffff;
+  --accent-soft: #e0f1f4;
+  --accent-text: #0a6b7a;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
 }
 
-:root {
-  color-scheme: dark;
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --radius: 0.625rem;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #0a1626;
+    --surface: #10213a;
+    --surface-2: #162b47;
+    --ink: #e6edf3;
+    --ink-2: #9db0c3;
+    --line: #22395a;
+    --accent: #45cedd;
+    --accent-hover: #6ad9e5;
+    --on-accent: #06222b;
+    --accent-soft: #123a4c;
+    --accent-text: #6ad9e5;
+    --danger: #ff8a7f;
+    --danger-soft: #3a1717;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  /* Fixed brand navy for the footer band, the same in both themes. */
+  --color-navy: #0b1d33;
+  --color-navy-2: #132c4a;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
   html {
-    @apply bg-neutral-950 scroll-smooth;
-  }
-  body {
-    @apply bg-neutral-950 text-white font-sans antialiased;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* Smooth scrolling with reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
     }
-    * {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
   }
 
-  /* Scroll margin for sticky header */
-  html {
-    scroll-padding-top: 80px;
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Selection color */
   ::selection {
-    @apply bg-cyan-400 text-neutral-950;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
 }
 
 @layer components {
-  /* Section utilities */
-  .section-padding {
-    @apply py-20 md:py-32;
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
-  .section-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  /* Wide, heavy cut of Archivo for headlines. */
+  .font-display {
+    font-stretch: 118%;
+    font-weight: 800;
+    letter-spacing: -0.025em;
   }
 
-  /* Heading styles */
-  .heading-xl {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+  .h-section {
+    font-stretch: 118%;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    @apply text-3xl leading-[1.05] text-balance text-ink sm:text-4xl lg:text-5xl;
   }
 
-  .heading-lg {
-    @apply text-3xl md:text-4xl font-bold tracking-tight;
+  .lede {
+    @apply max-w-[60ch] text-lg leading-relaxed text-pretty text-ink-2;
   }
 
-  .heading-md {
-    @apply text-2xl md:text-3xl font-bold tracking-tight;
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold whitespace-nowrap transition-[background-color,color,border-color,transform] duration-200 active:translate-y-px;
   }
+
+  /* Use as "btn btn-primary" / "btn btn-secondary". */
+  .btn-primary {
+    @apply bg-accent text-on-accent hover:bg-accent-hover;
+  }
+
+  .btn-secondary {
+    @apply border border-line bg-surface text-ink hover:border-ink-2;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors placeholder:text-ink-2/70 focus:border-accent focus:ring-2 focus:ring-accent/25 focus:outline-none;
+  }
+
+  .field[aria-invalid='true'] {
+    @apply border-danger;
+  }
+}
+
+/* Hero entrance. Runs once, skipped under reduced motion (see base layer). */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
