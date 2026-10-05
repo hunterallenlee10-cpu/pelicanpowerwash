@@ -1,5 +1,3 @@
-"use client";
-
 /*
  * Map of Southern Maryland. County outlines are traced from US Census county
  * boundary data (Maryland/Virginia/DC counties around the lower Chesapeake
@@ -19,82 +17,53 @@ const CALVERT =
 const ST_MARYS =
   "M490.1 530.1L492.3 538.6L488.4 540.4L486.9 539.3L484.5 532.2L475.1 518.6L467.6 516L463.8 517.2L460.1 520.6L454.8 508.5L448.5 486.7L441.9 479.5L429.7 469.4L408.7 462.1L403 462.5L388.3 456.6L366.8 457.3L355 456L348.9 464.4L335.7 460.3L326.3 454.9L319.2 446.5L319 445.3L322 445.2L322.4 444.3L323.8 427L314.2 414.8L312.6 414L308 414.9L298.2 389.1L300 372.7L289.1 357.9L337.5 281.4L340.7 279.1L349 278.3L367 281.1L368.1 280.4L369.7 281.3L372.3 285.8L373.9 286L375.3 288.9L383.1 290.1L387.9 287.3L392 290.7L398.9 303.8L398.1 310.5L405.1 315.5L412.9 323.2L420.8 335.3L426.2 336L435.7 343.7L442.2 346.4L445.8 353.5L449.7 353.9L458 352.3L465.5 361.5L474.8 369L479.4 375.6L483 384L483.3 389.1L480.4 397.2L486 397.4L489.1 398.8L494.2 409.3L498.3 411.5L502.3 411.4L522.1 403.4L523.6 407.4L537.5 415.1L537.8 417L527.9 428.6L525.6 435.8L525.3 440.7L532.4 467.2L544.1 483.6L548.2 492.5L560.1 507.1L564.9 517.8L555.7 529.9L556.3 535.4L559.6 542.7L560.3 560.4L565.3 578.5L564 582.8L561.5 577.3L558.6 574.2L554.3 571.8L548.6 572.2L544.4 568.1L539.1 555.3L528.8 540.5L522.3 537.9L518.4 537.9L516.7 539.5L514.4 538.5L509.8 529.9L510.2 525.6L505.1 517.5L495.2 517.1L490.1 530.1Z";
 
-export function PelicanServiceAreaMap() {
+export function ServiceAreaMap() {
   return (
     <svg
       viewBox="0 0 800 650"
       role="img"
-      aria-labelledby="pelican-service-map-title"
-      className="w-full h-auto"
+      aria-labelledby="service-map-title"
+      className="h-auto w-full"
     >
-      <title id="pelican-service-map-title">
-        Map of Southern Maryland highlighting our service area: St. Mary's
-        County as the primary service area, with Calvert and Charles counties
-        as surrounding coverage
+      <title id="service-map-title">
+        Map of Southern Maryland showing our service area: St. Mary's County as
+        the primary area, with Calvert and Charles counties as surrounding
+        coverage
       </title>
 
       {/* Surrounding land for geographic context */}
-      <path
-        d={SURROUNDING_LAND}
-        fill="rgba(255,255,255,0.04)"
-        stroke="rgba(255,255,255,0.10)"
-        strokeWidth={1}
-      />
+      <path d={SURROUNDING_LAND} className="fill-surface-2 stroke-line" strokeWidth={1} />
 
-      {/* Surrounding coverage: Charles & Calvert counties */}
-      <g fill="rgba(34,211,238,0.14)" stroke="rgba(34,211,238,0.45)" strokeWidth={1.5}>
+      {/* Surrounding coverage: Charles and Calvert counties */}
+      <g className="fill-accent/20 stroke-accent/60" strokeWidth={1.5}>
         <path d={CHARLES} />
         <path d={CALVERT} />
       </g>
 
       {/* Primary service area: St. Mary's County */}
-      <path d={ST_MARYS} fill="rgba(34,211,238,0.38)" stroke="#22d3ee" strokeWidth={2} />
+      <path d={ST_MARYS} className="fill-accent/55 stroke-accent" strokeWidth={2} />
 
-      {/* Pulse marker on Leonardtown, the heart of St. Mary's County */}
-      <circle cx={407} cy={420} r={14} fill="none" stroke="#22d3ee" strokeWidth={2}>
-        <animate attributeName="r" values="5;16" dur="2s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0.8;0" dur="2s" repeatCount="indefinite" />
-      </circle>
-      <circle cx={407} cy={420} r={5} fill="#22d3ee" />
+      {/* Leonardtown, the county seat */}
+      <circle cx={407} cy={420} r={6} className="fill-ink stroke-surface" strokeWidth={2.5} />
 
-      {/* County labels */}
-      <g fontFamily="inherit" textAnchor="middle">
-        <text x={230} y={278} fill="#e5e5e5" fontSize={16} fontWeight={600}>
+      <g textAnchor="middle" className="font-sans">
+        <text x={230} y={284} className="fill-ink" fontSize={17} fontWeight={700}>
           Charles
         </text>
-        <text x={230} y={296} fill="#a3a3a3" fontSize={12}>
-          County
-        </text>
-        <text x={443} y={252} fill="#e5e5e5" fontSize={16} fontWeight={600}>
+        <text x={443} y={258} className="fill-ink" fontSize={17} fontWeight={700}>
           Calvert
         </text>
-        <text x={443} y={270} fill="#a3a3a3" fontSize={12}>
-          County
-        </text>
-        <text x={418} y={452} fill="#ffffff" fontSize={17} fontWeight={700}>
+        <text x={418} y={458} className="fill-ink" fontSize={18} fontWeight={800}>
           St. Mary's
-        </text>
-        <text x={418} y={470} fill="#d4d4d4" fontSize={12}>
-          County
         </text>
       </g>
 
-      {/* Water labels */}
-      <g
-        fill="#606060"
-        fontStyle="italic"
-        letterSpacing={2}
-        textAnchor="middle"
-        fontFamily="inherit"
-      >
+      <g textAnchor="middle" fontStyle="italic" letterSpacing={1.5} className="fill-ink-2 font-sans">
         <text x={563} y={368} fontSize={14} transform="rotate(78 563 368)">
           Chesapeake Bay
         </text>
         <text x={252} y={472} fontSize={14} transform="rotate(25 252 472)">
           Potomac River
-        </text>
-        <text x={410} y={346} fontSize={11} letterSpacing={1} transform="rotate(40 410 346)">
-          Patuxent River
         </text>
       </g>
     </svg>
