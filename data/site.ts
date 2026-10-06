@@ -70,6 +70,15 @@ export const stats = [
 
 export type Photo = { src: string; alt: string };
 
+/**
+ * The hero image. Shows `photo` until both halves of a before and after pair
+ * are filled in below, then switches to the drag-to-compare slider.
+ */
+export const heroPhoto: Photo = {
+  src: "/photos/hero-house.webp",
+  alt: "A grey shingle home with a white wraparound porch and a clean front walk",
+};
+
 /** The before and after pair in the hero slider. Use your best job. */
 export const heroPhotos = {
   before: {
@@ -83,9 +92,13 @@ export const heroPhotos = {
   caption: "", // TODO: e.g. "Soft wash on vinyl siding in Leonardtown"
 };
 
+/**
+ * The pelican is a stand-in. Swap in a photo of the owner or crew with the rig
+ * (portrait orientation) when you have one; it builds more trust.
+ */
 export const aboutPhoto: Photo = {
-  src: "", // TODO: owner or crew with the rig, portrait orientation
-  alt: "The Pelican Power Wash team with their equipment",
+  src: "/photos/about-pelican.webp",
+  alt: "A brown pelican perched on a wooden dock piling",
 };
 
 export type ServiceItem = {
@@ -109,8 +122,8 @@ export const serviceCategories: ServiceCategory[] = [
     summary:
       "Siding, concrete, decks and fences for homes across St. Mary's County.",
     photo: {
-      src: "",
-      alt: "A freshly washed home with a clean driveway",
+      src: "/photos/service-residential.webp",
+      alt: "Pressure washing the grey siding of a two-story home",
     },
     services: [
       {
@@ -167,8 +180,8 @@ export const serviceCategories: ServiceCategory[] = [
     summary:
       "Storefronts, lots and fleets kept presentable for customers and inspectors.",
     photo: {
-      src: "",
-      alt: "A clean commercial storefront and sidewalk",
+      src: "/photos/service-commercial.webp",
+      alt: "Pressure washing the stone steps outside a public building",
     },
     services: [
       {
@@ -207,8 +220,8 @@ export const serviceCategories: ServiceCategory[] = [
     summary:
       "Roofs, gutters, stains and delicate surfaces that need the right method.",
     photo: {
-      src: "",
-      alt: "A roof cleaned of black algae streaks",
+      src: "/photos/service-specialty.webp",
+      alt: "Flushing out a gutter along an asphalt shingle roof",
     },
     services: [
       {
