@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, MessageSquare, Phone } from "lucide-react";
 import {
-  SHOW_CONTENT_SLOTS,
   business,
   emailHref,
   phoneHref,
@@ -136,7 +135,7 @@ export function SiteFooter() {
             ))}
           </ul>
 
-          {socials.length > 0 ? (
+          {socials.length > 0 && (
             <ul className="mt-6 flex flex-wrap gap-2">
               {socials.map((key) => (
                 <li key={key}>
@@ -151,13 +150,6 @@ export function SiteFooter() {
                 </li>
               ))}
             </ul>
-          ) : (
-            SHOW_CONTENT_SLOTS && (
-              <p className="mt-6 rounded-2xl border border-dashed border-white/25 px-4 py-3 text-xs leading-relaxed text-white/60">
-                Social links go here: Facebook, Instagram, Nextdoor and your
-                Google Business Profile. Add them in data/site.ts.
-              </p>
-            )
           )}
         </div>
       </div>
