@@ -20,13 +20,13 @@ each one for a photo of your own work when you have it.
 ## Before and after gallery
 
 These pairs are Creative Commons photos from other pressure washing companies.
-Unlike the photos above, their licenses require a credit, which the site shows
-under each slider (the `credit` field in `data/site.ts`). Each original was a
+Unlike the photos above, their licenses (CC BY / CC BY-SA) require a visible
+credit to the author. The site does not currently show one, so replace these
+with your own job photos as soon as you can. Each original was a
 single side-by-side or stacked before/after image; it was split into two
 halves, cropped to 3:2 (cutting off the baked-in "BEFORE"/"AFTER" labels and a
 watermark), upscaled with an EDSR super-resolution model so they stay
-sharp on high-density screens, and saved as 1440x960 WebP. Swap them for your own jobs when you have them,
-and delete the `credit` field at the same time.
+sharp on high-density screens, and saved as 1440x960 WebP.
 
 | Files | Used for | Author and license | Source |
 | --- | --- | --- | --- |
