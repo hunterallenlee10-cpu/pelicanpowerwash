@@ -10,8 +10,7 @@ export function Work() {
         <h2 className="h-section max-w-3xl">Drag the slider. See the difference.</h2>
         <p className="lede mt-5">
           What a proper wash does for siding, concrete, decks and fences. These
-          sample jobs come from other pressure washing crews and are credited
-          under each photo.
+          sample jobs come from other pressure washing crews.
         </p>
 
         <ul className="mt-12 grid gap-x-6 gap-y-10 md:grid-cols-2">
@@ -30,20 +29,6 @@ export function Work() {
                   <span className="font-normal text-ink-2"> in {item.location}</span>
                 )}
               </p>
-              {item.credit && (
-                <p className="mt-1 text-xs text-ink-2">
-                  Photos:{" "}
-                  <a
-                    href={item.credit.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-2 hover:text-ink"
-                  >
-                    {item.credit.author}
-                  </a>
-                  , {item.credit.license}
-                </p>
-              )}
             </li>
           ))}
         </ul>
