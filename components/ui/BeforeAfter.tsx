@@ -57,6 +57,9 @@ export function BeforeAfter({
       onPointerMove={(event) => {
         if (dragging.current) positionFromPointer(event.clientX);
       }}
+      // Without this, a mouse drag on a photo starts the browser's native
+      // image drag, which cancels the pointer stream after a few pixels.
+      onDragStart={(event) => event.preventDefault()}
       onPointerUp={() => {
         dragging.current = false;
       }}

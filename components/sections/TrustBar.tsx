@@ -1,10 +1,9 @@
 import { Check, Star } from "lucide-react";
-import { SHOW_CONTENT_SLOTS, business, guarantees } from "@/data/site";
+import { business, guarantees } from "@/data/site";
 
 /** Plain facts directly under the hero: rating (when set) and guarantees. */
 export function TrustBar() {
   const rating = business.googleRating;
-  const showRatingSlot = !rating && SHOW_CONTENT_SLOTS;
 
   return (
     <section aria-label="Why customers choose us" className="border-y border-line bg-surface">
@@ -24,11 +23,6 @@ export function TrustBar() {
               <span className="font-normal text-ink-2"> from {rating.count} reviews</span>
             </span>
           </a>
-        )}
-        {showRatingSlot && (
-          <p className="shrink-0 rounded-full border border-dashed border-line px-4 py-2 text-sm text-ink-2">
-            Google rating goes here
-          </p>
         )}
 
         <ul className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:gap-y-2">
