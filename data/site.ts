@@ -296,8 +296,9 @@ export type GalleryItem = {
 /**
  * Before and after pairs for "Our work". Same framing in both shots works best.
  *
- * These are Creative Commons photos from other pressure washing crews, used as
- * stand-ins until you have your own. Sources are in public/photos/README.md.
+ * These are stand-ins until you have your own: Creative Commons photos from
+ * other crews (siding, walkway) and AI-generated images (deck, fence). Sources
+ * are in public/photos/README.md.
  */
 export const gallery: GalleryItem[] = [
   {
@@ -322,6 +323,30 @@ export const gallery: GalleryItem[] = [
     after: {
       src: "/photos/gallery-walkway-after.webp",
       alt: "The same walkway bright and uniform after pressure washing",
+    },
+  },
+  {
+    title: "Wood deck",
+    location: "",
+    before: {
+      src: "/photos/gallery-deck-before.webp",
+      alt: "A weathered grey wooden deck with mildew along the boards",
+    },
+    after: {
+      src: "/photos/gallery-deck-after.webp",
+      alt: "The same deck back to clean honey-colored wood after washing",
+    },
+  },
+  {
+    title: "Vinyl privacy fence",
+    location: "",
+    before: {
+      src: "/photos/gallery-fence-before.webp",
+      alt: "A white vinyl privacy fence covered in green algae and mildew",
+    },
+    after: {
+      src: "/photos/gallery-fence-after.webp",
+      alt: "The same fence bright white after a soft wash",
     },
   },
 ];

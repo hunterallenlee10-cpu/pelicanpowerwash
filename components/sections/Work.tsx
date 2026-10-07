@@ -9,8 +9,7 @@ export function Work() {
       <div className="container-page">
         <h2 className="h-section max-w-3xl">Drag the slider. See the difference.</h2>
         <p className="lede mt-5">
-          What a proper wash does for siding and concrete. These sample jobs
-          come from other pressure washing crews.
+          What a proper wash does for siding, concrete, decks and fences.
         </p>
 
         <ul className="mt-12 grid gap-x-6 gap-y-10 md:grid-cols-2">
