@@ -324,30 +324,6 @@ export const gallery: GalleryItem[] = [
       alt: "The same walkway bright and uniform after pressure washing",
     },
   },
-  {
-    title: "Wood deck",
-    location: "",
-    before: {
-      src: "/photos/gallery-deck-before.webp",
-      alt: "A weathered grey wooden deck and railing",
-    },
-    after: {
-      src: "/photos/gallery-deck-after.webp",
-      alt: "The same deck with its warm wood color restored after washing",
-    },
-  },
-  {
-    title: "Vinyl privacy fence",
-    location: "",
-    before: {
-      src: "/photos/gallery-fence-before.webp",
-      alt: "A white vinyl privacy fence stained with grime and mildew",
-    },
-    after: {
-      src: "/photos/gallery-fence-after.webp",
-      alt: "The same fence bright white after a wash",
-    },
-  },
 ];
 
 export type PriceItem = {
