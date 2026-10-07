@@ -32,5 +32,3 @@ sharp on high-density screens, and saved as 1440x960 WebP.
 | --- | --- | --- | --- |
 | gallery-siding-before.webp, gallery-siding-after.webp | Vinyl siding house wash | East Coast Powerwashing, CC BY-SA 3.0 | https://commons.wikimedia.org/wiki/File:Before_and_after_low_pressure_cleaning.jpg |
 | gallery-walkway-before.webp, gallery-walkway-after.webp | Concrete walkway | Decorative Concrete Kingdom, CC BY 2.0 | https://www.flickr.com/photos/38041294@N05/14126993444 |
-| gallery-deck-before.webp, gallery-deck-after.webp | Wood deck | Peachtree Pressure Washing (ppressurewash), CC BY-SA 2.0 | https://www.flickr.com/photos/143920257@N08/29976548835 |
-| gallery-fence-before.webp, gallery-fence-after.webp | Vinyl privacy fence | Peachtree Pressure Washing (ppressurewash), CC BY-SA 2.0 | https://www.flickr.com/photos/143920257@N08/29682796150 |
