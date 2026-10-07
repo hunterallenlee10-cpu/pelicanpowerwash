@@ -24,7 +24,8 @@ Unlike the photos above, their licenses require a credit, which the site shows
 under each slider (the `credit` field in `data/site.ts`). Each original was a
 single side-by-side or stacked before/after image; it was split into two
 halves, cropped to 3:2 (cutting off the baked-in "BEFORE"/"AFTER" labels and a
-watermark) and saved as WebP. Swap them for your own jobs when you have them,
+watermark), upscaled with an EDSR super-resolution model so they stay
+sharp on high-density screens, and saved as 1440x960 WebP. Swap them for your own jobs when you have them,
 and delete the `credit` field at the same time.
 
 | Files | Used for | Author and license | Source |
