@@ -1,5 +1,5 @@
 import { BeforeAfter } from "@/components/ui/BeforeAfter";
-import { SHOW_CONTENT_SLOTS, business, gallery } from "@/data/site";
+import { business, gallery } from "@/data/site";
 
 export function Work() {
   const instagram = business.socials.instagram || business.socials.facebook;
@@ -48,7 +48,7 @@ export function Work() {
           ))}
         </ul>
 
-        {instagram ? (
+        {instagram && (
           <a
             href={instagram}
             target="_blank"
@@ -57,13 +57,6 @@ export function Work() {
           >
             See more jobs on social media
           </a>
-        ) : (
-          SHOW_CONTENT_SLOTS && (
-            <p className="mt-12 inline-block rounded-2xl border border-dashed border-line px-4 py-3 text-sm text-ink-2">
-              Link to your Instagram or Facebook photos goes here once added in
-              data/site.ts.
-            </p>
-          )
         )}
       </div>
     </section>
