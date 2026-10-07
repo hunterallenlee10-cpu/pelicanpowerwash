@@ -16,3 +16,20 @@ each one for a photo of your own work when you have it.
 | service-commercial.webp | Services: Commercial | https://www.pexels.com/photo/cleaner-cleaning-the-staircase-14965465/ |
 | service-specialty.webp | Services: Specialty | https://www.pexels.com/photo/efficient-residential-gutter-cleaning-service-35153375/ |
 | about-pelican.webp | About | Unsplash, https://images.unsplash.com/photo-1616369745306-5d693c56520a |
+
+## Before and after gallery
+
+These pairs are Creative Commons photos from other pressure washing companies.
+Unlike the photos above, their licenses require a credit, which the site shows
+under each slider (the `credit` field in `data/site.ts`). Each original was a
+single side-by-side or stacked before/after image; it was split into two
+halves, cropped to 3:2 (cutting off the baked-in "BEFORE"/"AFTER" labels and a
+watermark) and saved as WebP. Swap them for your own jobs when you have them,
+and delete the `credit` field at the same time.
+
+| Files | Used for | Author and license | Source |
+| --- | --- | --- | --- |
+| gallery-siding-before.webp, gallery-siding-after.webp | Vinyl siding house wash | East Coast Powerwashing, CC BY-SA 3.0 | https://commons.wikimedia.org/wiki/File:Before_and_after_low_pressure_cleaning.jpg |
+| gallery-walkway-before.webp, gallery-walkway-after.webp | Concrete walkway | Decorative Concrete Kingdom, CC BY 2.0 | https://www.flickr.com/photos/38041294@N05/14126993444 |
+| gallery-deck-before.webp, gallery-deck-after.webp | Wood deck | Peachtree Pressure Washing (ppressurewash), CC BY-SA 2.0 | https://www.flickr.com/photos/143920257@N08/29976548835 |
+| gallery-fence-before.webp, gallery-fence-after.webp | Vinyl privacy fence | Peachtree Pressure Washing (ppressurewash), CC BY-SA 2.0 | https://www.flickr.com/photos/143920257@N08/29682796150 |

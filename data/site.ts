@@ -291,33 +291,87 @@ export type GalleryItem = {
   location: string;
   before: Photo;
   after: Photo;
+  /**
+   * Who took the photos, for Creative Commons stand-ins. The license requires
+   * this credit to show next to the photo. Remove it once you use your own.
+   */
+  credit?: { author: string; license: string; url: string };
 };
 
-/** Before and after pairs for "Our work". Same framing in both shots works best. */
+/**
+ * Before and after pairs for "Our work". Same framing in both shots works best.
+ *
+ * These are Creative Commons photos from other pressure washing crews, used as
+ * stand-ins until you have your own. Sources are in public/photos/README.md.
+ */
 export const gallery: GalleryItem[] = [
   {
     title: "Vinyl siding house wash",
     location: "",
-    before: { src: "", alt: "Siding before washing" },
-    after: { src: "", alt: "Siding after washing" },
+    before: {
+      src: "/photos/gallery-siding-before.webp",
+      alt: "Grey vinyl siding streaked with green algae and mildew",
+    },
+    after: {
+      src: "/photos/gallery-siding-after.webp",
+      alt: "The same vinyl siding clean and even after a low pressure wash",
+    },
+    credit: {
+      author: "East Coast Powerwashing",
+      license: "CC BY-SA 3.0",
+      url: "https://commons.wikimedia.org/wiki/File:Before_and_after_low_pressure_cleaning.jpg",
+    },
   },
   {
-    title: "Concrete driveway",
+    title: "Concrete walkway",
     location: "",
-    before: { src: "", alt: "Driveway before cleaning" },
-    after: { src: "", alt: "Driveway after cleaning" },
+    before: {
+      src: "/photos/gallery-walkway-before.webp",
+      alt: "A concrete walkway darkened with dirt and blotchy stains",
+    },
+    after: {
+      src: "/photos/gallery-walkway-after.webp",
+      alt: "The same walkway bright and uniform after pressure washing",
+    },
+    credit: {
+      author: "Decorative Concrete Kingdom",
+      license: "CC BY 2.0",
+      url: "https://www.flickr.com/photos/38041294@N05/14126993444",
+    },
   },
   {
     title: "Wood deck",
     location: "",
-    before: { src: "", alt: "Deck before cleaning" },
-    after: { src: "", alt: "Deck after cleaning" },
+    before: {
+      src: "/photos/gallery-deck-before.webp",
+      alt: "A weathered grey wooden deck and railing",
+    },
+    after: {
+      src: "/photos/gallery-deck-after.webp",
+      alt: "The same deck with its warm wood color restored after washing",
+    },
+    credit: {
+      author: "Peachtree Pressure Washing",
+      license: "CC BY-SA 2.0",
+      url: "https://www.flickr.com/photos/143920257@N08/29976548835",
+    },
   },
   {
-    title: "Paver patio",
+    title: "Vinyl privacy fence",
     location: "",
-    before: { src: "", alt: "Patio before cleaning" },
-    after: { src: "", alt: "Patio after cleaning" },
+    before: {
+      src: "/photos/gallery-fence-before.webp",
+      alt: "A white vinyl privacy fence stained with grime and mildew",
+    },
+    after: {
+      src: "/photos/gallery-fence-after.webp",
+      alt: "The same fence bright white after a wash",
+    },
+    credit: {
+      author: "Peachtree Pressure Washing",
+      license: "CC BY-SA 2.0",
+      url: "https://www.flickr.com/photos/143920257@N08/29682796150",
+    },
   },
 ];
 
