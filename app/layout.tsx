@@ -43,10 +43,6 @@ export const metadata: Metadata = {
     title,
     description,
   },
-  icons: {
-    icon: '/pelican/logo.png',
-    apple: '/pelican/logo.png',
-  },
 }
 
 export const viewport: Viewport = {

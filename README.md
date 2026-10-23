@@ -31,8 +31,11 @@ from it, so most edits never touch a component.
   `data/site.ts`. Empty photo slots show a labelled placeholder frame.
 - **Reviews.** Paste real reviews into `reviews`. Until then the section shows
   labelled slots.
-- **Slots.** `SHOW_CONTENT_SLOTS` controls the labelled placeholders. Set it to
-  `false` to hide every "goes here" label before launch.
+- **Slots.** `SHOW_CONTENT_SLOTS` controls the labelled placeholders. It is
+  `false` for the live site, so empty slots stay hidden. Set it to `true`
+  locally to see every spot that still needs content.
+- **Icons.** `app/icon.png` (browser tab) and `app/apple-icon.png` (phone home
+  screen) are small copies of the logo. Regenerate them if the logo changes.
 
 ## Quote form email
 

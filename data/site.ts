@@ -17,7 +17,7 @@
  * labels: empty photo frames then show the logo instead, and empty review and
  * social slots disappear.
  */
-export const SHOW_CONTENT_SLOTS = true;
+export const SHOW_CONTENT_SLOTS = false;
 
 export const business = {
   name: "Pelican Power Wash",
