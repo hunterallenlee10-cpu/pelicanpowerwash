@@ -1,0 +1,658 @@
+{
+  "images": {
+    "k0-final-clean-16x9": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k0-final-clean-16x9-1920.avif",
+            "webp": "/story/img/k0-final-clean-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k0-final-clean-16x9-1280.avif",
+            "webp": "/story/img/k0-final-clean-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k0-final-clean-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k4-final-dirty-16x9": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k4-final-dirty-16x9-1920.avif",
+            "webp": "/story/img/k4-final-dirty-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k4-final-dirty-16x9-1280.avif",
+            "webp": "/story/img/k4-final-dirty-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k4-final-dirty-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k1-driveway-clean-16x9": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k1-driveway-clean-16x9-1920.avif",
+            "webp": "/story/img/k1-driveway-clean-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k1-driveway-clean-16x9-1280.avif",
+            "webp": "/story/img/k1-driveway-clean-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k1-driveway-clean-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k1-driveway-dirty-16x9": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k1-driveway-dirty-16x9-1920.avif",
+            "webp": "/story/img/k1-driveway-dirty-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k1-driveway-dirty-16x9-1280.avif",
+            "webp": "/story/img/k1-driveway-dirty-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k1-driveway-dirty-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k1-driveway-mid-16x9": {
+      "sig": "placeholder:mid:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k1-driveway-mid-16x9-1920.avif",
+            "webp": "/story/img/k1-driveway-mid-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k1-driveway-mid-16x9-1280.avif",
+            "webp": "/story/img/k1-driveway-mid-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k1-driveway-mid-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k2-roof-clean-16x9": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k2-roof-clean-16x9-1920.avif",
+            "webp": "/story/img/k2-roof-clean-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k2-roof-clean-16x9-1280.avif",
+            "webp": "/story/img/k2-roof-clean-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k2-roof-clean-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k2-roof-dirty-16x9": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k2-roof-dirty-16x9-1920.avif",
+            "webp": "/story/img/k2-roof-dirty-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k2-roof-dirty-16x9-1280.avif",
+            "webp": "/story/img/k2-roof-dirty-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k2-roof-dirty-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k2-roof-mid-16x9": {
+      "sig": "placeholder:mid:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k2-roof-mid-16x9-1920.avif",
+            "webp": "/story/img/k2-roof-mid-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k2-roof-mid-16x9-1280.avif",
+            "webp": "/story/img/k2-roof-mid-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k2-roof-mid-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k3-siding-clean-16x9": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k3-siding-clean-16x9-1920.avif",
+            "webp": "/story/img/k3-siding-clean-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k3-siding-clean-16x9-1280.avif",
+            "webp": "/story/img/k3-siding-clean-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k3-siding-clean-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k3-siding-dirty-16x9": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k3-siding-dirty-16x9-1920.avif",
+            "webp": "/story/img/k3-siding-dirty-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k3-siding-dirty-16x9-1280.avif",
+            "webp": "/story/img/k3-siding-dirty-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k3-siding-dirty-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k3-siding-mid-16x9": {
+      "sig": "placeholder:mid:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/k3-siding-mid-16x9-1920.avif",
+            "webp": "/story/img/k3-siding-mid-16x9-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/k3-siding-mid-16x9-1280.avif",
+            "webp": "/story/img/k3-siding-mid-16x9-1280.webp"
+          }
+        ],
+        "src": "/story/img/k3-siding-mid-16x9-1920.webp",
+        "placeholder": true
+      }
+    },
+    "k0-final-clean-9x16": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1080,
+        "height": 1920,
+        "sources": [
+          {
+            "w": 1080,
+            "avif": "/story/img/k0-final-clean-9x16-1080.avif",
+            "webp": "/story/img/k0-final-clean-9x16-1080.webp"
+          },
+          {
+            "w": 720,
+            "avif": "/story/img/k0-final-clean-9x16-720.avif",
+            "webp": "/story/img/k0-final-clean-9x16-720.webp"
+          }
+        ],
+        "src": "/story/img/k0-final-clean-9x16-1080.webp",
+        "placeholder": true
+      }
+    },
+    "k4-final-dirty-9x16": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1080,
+        "height": 1920,
+        "sources": [
+          {
+            "w": 1080,
+            "avif": "/story/img/k4-final-dirty-9x16-1080.avif",
+            "webp": "/story/img/k4-final-dirty-9x16-1080.webp"
+          },
+          {
+            "w": 720,
+            "avif": "/story/img/k4-final-dirty-9x16-720.avif",
+            "webp": "/story/img/k4-final-dirty-9x16-720.webp"
+          }
+        ],
+        "src": "/story/img/k4-final-dirty-9x16-1080.webp",
+        "placeholder": true
+      }
+    },
+    "k1-driveway-clean-9x16": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1080,
+        "height": 1920,
+        "sources": [
+          {
+            "w": 1080,
+            "avif": "/story/img/k1-driveway-clean-9x16-1080.avif",
+            "webp": "/story/img/k1-driveway-clean-9x16-1080.webp"
+          },
+          {
+            "w": 720,
+            "avif": "/story/img/k1-driveway-clean-9x16-720.avif",
+            "webp": "/story/img/k1-driveway-clean-9x16-720.webp"
+          }
+        ],
+        "src": "/story/img/k1-driveway-clean-9x16-1080.webp",
+        "placeholder": true
+      }
+    },
+    "k1-driveway-dirty-9x16": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1080,
+        "height": 1920,
+        "sources": [
+          {
+            "w": 1080,
+            "avif": "/story/img/k1-driveway-dirty-9x16-1080.avif",
+            "webp": "/story/img/k1-driveway-dirty-9x16-1080.webp"
+          },
+          {
+            "w": 720,
+            "avif": "/story/img/k1-driveway-dirty-9x16-720.avif",
+            "webp": "/story/img/k1-driveway-dirty-9x16-720.webp"
+          }
+        ],
+        "src": "/story/img/k1-driveway-dirty-9x16-1080.webp",
+        "placeholder": true
+      }
+    },
+    "k2-roof-clean-9x16": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1080,
+        "height": 1920,
+        "sources": [
+          {
+            "w": 1080,
+            "avif": "/story/img/k2-roof-clean-9x16-1080.avif",
+            "webp": "/story/img/k2-roof-clean-9x16-1080.webp"
+          },
+          {
+            "w": 720,
+            "avif": "/story/img/k2-roof-clean-9x16-720.avif",
+            "webp": "/story/img/k2-roof-clean-9x16-720.webp"
+          }
+        ],
+        "src": "/story/img/k2-roof-clean-9x16-1080.webp",
+        "placeholder": true
+      }
+    },
+    "k2-roof-dirty-9x16": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1080,
+        "height": 1920,
+        "sources": [
+          {
+            "w": 1080,
+            "avif": "/story/img/k2-roof-dirty-9x16-1080.avif",
+            "webp": "/story/img/k2-roof-dirty-9x16-1080.webp"
+          },
+          {
+            "w": 720,
+            "avif": "/story/img/k2-roof-dirty-9x16-720.avif",
+            "webp": "/story/img/k2-roof-dirty-9x16-720.webp"
+          }
+        ],
+        "src": "/story/img/k2-roof-dirty-9x16-1080.webp",
+        "placeholder": true
+      }
+    },
+    "k3-siding-clean-9x16": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1080,
+        "height": 1920,
+        "sources": [
+          {
+            "w": 1080,
+            "avif": "/story/img/k3-siding-clean-9x16-1080.avif",
+            "webp": "/story/img/k3-siding-clean-9x16-1080.webp"
+          },
+          {
+            "w": 720,
+            "avif": "/story/img/k3-siding-clean-9x16-720.avif",
+            "webp": "/story/img/k3-siding-clean-9x16-720.webp"
+          }
+        ],
+        "src": "/story/img/k3-siding-clean-9x16-1080.webp",
+        "placeholder": true
+      }
+    },
+    "k3-siding-dirty-9x16": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1080,
+        "height": 1920,
+        "sources": [
+          {
+            "w": 1080,
+            "avif": "/story/img/k3-siding-dirty-9x16-1080.avif",
+            "webp": "/story/img/k3-siding-dirty-9x16-1080.webp"
+          },
+          {
+            "w": 720,
+            "avif": "/story/img/k3-siding-dirty-9x16-720.avif",
+            "webp": "/story/img/k3-siding-dirty-9x16-720.webp"
+          }
+        ],
+        "src": "/story/img/k3-siding-dirty-9x16-1080.webp",
+        "placeholder": true
+      }
+    },
+    "g1-driveway-topdown-clean": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1600,
+        "height": 900,
+        "sources": [
+          {
+            "w": 1600,
+            "avif": "/story/img/g1-driveway-topdown-clean-1600.avif",
+            "webp": "/story/img/g1-driveway-topdown-clean-1600.webp"
+          },
+          {
+            "w": 960,
+            "avif": "/story/img/g1-driveway-topdown-clean-960.avif",
+            "webp": "/story/img/g1-driveway-topdown-clean-960.webp"
+          }
+        ],
+        "src": "/story/img/g1-driveway-topdown-clean-1600.webp",
+        "placeholder": true
+      }
+    },
+    "g2-driveway-topdown-dirty": {
+      "sig": "placeholder:dirty:v2",
+      "entry": {
+        "width": 1600,
+        "height": 900,
+        "sources": [
+          {
+            "w": 1600,
+            "avif": "/story/img/g2-driveway-topdown-dirty-1600.avif",
+            "webp": "/story/img/g2-driveway-topdown-dirty-1600.webp"
+          },
+          {
+            "w": 960,
+            "avif": "/story/img/g2-driveway-topdown-dirty-960.avif",
+            "webp": "/story/img/g2-driveway-topdown-dirty-960.webp"
+          }
+        ],
+        "src": "/story/img/g2-driveway-topdown-dirty-1600.webp",
+        "placeholder": true
+      }
+    },
+    "g3-grime-map": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 1600,
+        "height": 900,
+        "sources": [
+          {
+            "w": 1600,
+            "avif": "/story/img/g3-grime-map-1600.avif",
+            "webp": "/story/img/g3-grime-map-1600.webp"
+          },
+          {
+            "w": 960,
+            "avif": "/story/img/g3-grime-map-960.avif",
+            "webp": "/story/img/g3-grime-map-960.webp"
+          }
+        ],
+        "src": "/story/img/g3-grime-map-1600.webp",
+        "placeholder": true
+      }
+    },
+    "t-siding": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 800,
+        "height": 800,
+        "sources": [
+          {
+            "w": 800,
+            "avif": "/story/img/t-siding-800.avif",
+            "webp": "/story/img/t-siding-800.webp"
+          }
+        ],
+        "src": "/story/img/t-siding-800.webp",
+        "placeholder": true
+      }
+    },
+    "t-roof": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 800,
+        "height": 800,
+        "sources": [
+          {
+            "w": 800,
+            "avif": "/story/img/t-roof-800.avif",
+            "webp": "/story/img/t-roof-800.webp"
+          }
+        ],
+        "src": "/story/img/t-roof-800.webp",
+        "placeholder": true
+      }
+    },
+    "t-concrete": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 800,
+        "height": 800,
+        "sources": [
+          {
+            "w": 800,
+            "avif": "/story/img/t-concrete-800.avif",
+            "webp": "/story/img/t-concrete-800.webp"
+          }
+        ],
+        "src": "/story/img/t-concrete-800.webp",
+        "placeholder": true
+      }
+    },
+    "t-deck": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 800,
+        "height": 800,
+        "sources": [
+          {
+            "w": 800,
+            "avif": "/story/img/t-deck-800.avif",
+            "webp": "/story/img/t-deck-800.webp"
+          }
+        ],
+        "src": "/story/img/t-deck-800.webp",
+        "placeholder": true
+      }
+    },
+    "t-pavers": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 800,
+        "height": 800,
+        "sources": [
+          {
+            "w": 800,
+            "avif": "/story/img/t-pavers-800.avif",
+            "webp": "/story/img/t-pavers-800.webp"
+          }
+        ],
+        "src": "/story/img/t-pavers-800.webp",
+        "placeholder": true
+      }
+    },
+    "t-brick": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 800,
+        "height": 800,
+        "sources": [
+          {
+            "w": 800,
+            "avif": "/story/img/t-brick-800.avif",
+            "webp": "/story/img/t-brick-800.webp"
+          }
+        ],
+        "src": "/story/img/t-brick-800.webp",
+        "placeholder": true
+      }
+    },
+    "t-fence": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 800,
+        "height": 800,
+        "sources": [
+          {
+            "w": 800,
+            "avif": "/story/img/t-fence-800.avif",
+            "webp": "/story/img/t-fence-800.webp"
+          }
+        ],
+        "src": "/story/img/t-fence-800.webp",
+        "placeholder": true
+      }
+    },
+    "t-stucco": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 800,
+        "height": 800,
+        "sources": [
+          {
+            "w": 800,
+            "avif": "/story/img/t-stucco-800.avif",
+            "webp": "/story/img/t-stucco-800.webp"
+          }
+        ],
+        "src": "/story/img/t-stucco-800.webp",
+        "placeholder": true
+      }
+    },
+    "h1-house-iso": {
+      "sig": "placeholder:neutral:v2",
+      "entry": {
+        "width": 1600,
+        "height": 1200,
+        "sources": [
+          {
+            "w": 1600,
+            "avif": "/story/img/h1-house-iso-1600.avif",
+            "webp": "/story/img/h1-house-iso-1600.webp"
+          },
+          {
+            "w": 960,
+            "avif": "/story/img/h1-house-iso-960.avif",
+            "webp": "/story/img/h1-house-iso-960.webp"
+          }
+        ],
+        "src": "/story/img/h1-house-iso-1600.webp",
+        "placeholder": true
+      }
+    },
+    "e1-og-bg": {
+      "sig": "placeholder:clean:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/e1-og-bg-1920.avif",
+            "webp": "/story/img/e1-og-bg-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/e1-og-bg-1280.avif",
+            "webp": "/story/img/e1-og-bg-1280.webp"
+          }
+        ],
+        "src": "/story/img/e1-og-bg-1920.webp",
+        "jpeg": "/story/img/e1-og-bg-1200.jpg",
+        "placeholder": true
+      }
+    },
+    "e2-mist": {
+      "sig": "placeholder:black:v2",
+      "entry": {
+        "width": 1920,
+        "height": 1080,
+        "sources": [
+          {
+            "w": 1920,
+            "avif": "/story/img/e2-mist-1920.avif",
+            "webp": "/story/img/e2-mist-1920.webp"
+          },
+          {
+            "w": 1280,
+            "avif": "/story/img/e2-mist-1280.avif",
+            "webp": "/story/img/e2-mist-1280.webp"
+          }
+        ],
+        "src": "/story/img/e2-mist-1920.webp",
+        "placeholder": true
+      }
+    }
+  }
+}
