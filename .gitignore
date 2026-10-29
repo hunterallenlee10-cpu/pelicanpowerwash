@@ -19,3 +19,6 @@ node_modules
 # Build artifacts
 next-env.d.ts
 *.tsbuildinfo
+# Raw Higgsfield clips are large; the extracted frames in public/story are committed.
+assets-inbox/*.mp4
+assets-inbox/*.mov

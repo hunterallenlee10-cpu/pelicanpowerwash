@@ -18,7 +18,7 @@ export default function PrivacyPage() {
   return (
     <>
       <SiteHeader />
-      <main className="container-page max-w-3xl py-16 md:py-24">
+      <main className="container-page max-w-3xl pt-32 pb-16 md:pt-40 md:pb-24">
         <h1 className="h-section">Privacy policy</h1>
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-ink-2 [&_h2]:mt-10 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink">
           <p>

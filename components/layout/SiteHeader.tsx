@@ -7,16 +7,22 @@ import { Menu, Phone, X } from "lucide-react";
 import { business, phoneHref, showReviewsSection } from "@/data/site";
 
 const navItems = [
-  { label: "Services", href: "/#services" },
-  { label: "Our work", href: "/#work" },
-  { label: "Pricing", href: "/#pricing" },
+  { label: "Try the wand", href: "/#try-the-wand" },
+  { label: "House & roof", href: "/#house-and-roof" },
+  { label: "Before / after", href: "/#work" },
+  { label: "Instant quote", href: "/#instant-price" },
+  { label: "Packages", href: "/#pricing" },
   { label: "Reviews", href: "/#testimonials" },
-  { label: "Service area", href: "/#service-areas" },
   { label: "FAQ", href: "/#faq" },
 ].filter((item) => showReviewsSection || item.href !== "/#testimonials");
 
+/**
+ * Floating nav. See-through over the full-screen photos, with a soft dark
+ * fade behind it so the links stay readable on any picture.
+ */
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -27,37 +33,42 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-canvas/90 backdrop-blur-md">
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter] duration-300 ${
+        open ? "bg-canvas" : scrolled ? "bg-canvas/55 backdrop-blur-md" : "bg-transparent"
+      }`}
+    >
       <div className="container-page flex h-[72px] items-center justify-between gap-6">
-        <Link
-          href="/#top"
-          className="flex shrink-0 items-center gap-2.5"
-          onClick={() => setOpen(false)}
-        >
+        <Link href="/#top" className="flex shrink-0 items-center gap-2.5" onClick={() => setOpen(false)}>
           <Image
-            src="/pelican/logo.png"
+            src="/pelican/logo-96.webp"
             alt=""
             width={48}
             height={48}
-            className="h-12 w-12"
+            className="h-11 w-11"
             priority
           />
-          <span className="font-display text-lg leading-none text-ink">
+          <span className="font-display text-lg leading-none text-white">
             Pelican
-            <span className="block text-[0.7rem] font-bold tracking-[0.14em] text-accent-text uppercase">
-              Power Wash
-            </span>
+            <span className="label-mono mt-0.5 block text-[0.6rem] text-accent-text">Power Wash</span>
           </span>
         </Link>
 
-        <nav aria-label="Main" className="hidden lg:block">
+        <nav aria-label="Main" className="hidden xl:block">
           <ul className="flex items-center gap-1">
             {navItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="rounded-full px-3 py-2 text-[0.95rem] font-medium text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
+                  className="label-mono rounded-full px-3 py-2 text-white/75 transition-colors hover:text-white"
                 >
                   {item.label}
                 </Link>
@@ -69,18 +80,21 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <a
             href={phoneHref}
-            className="hidden items-center gap-2 px-3 py-2 font-semibold text-ink transition-colors hover:text-accent-text xl:inline-flex"
+            className="label-mono hidden items-center gap-2 px-3 py-2 text-white/80 transition-colors hover:text-white 2xl:inline-flex"
           >
-            <Phone className="h-4 w-4" strokeWidth={2} aria-hidden />
+            <Phone className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
             {business.phone.display}
           </a>
-          <Link href="/#quote-form" className="btn btn-primary hidden px-5 py-2.5 sm:inline-flex">
-            Get a free quote
+          <Link
+            href="/#quote-form"
+            className="label-mono hidden min-h-11 items-center rounded-full border border-white/40 px-4 text-white transition-colors hover:border-white sm:inline-flex"
+          >
+            Free quote
           </Link>
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
-            className="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-surface-2 lg:hidden"
+            className="-mr-2 inline-flex h-12 w-12 items-center justify-center rounded-full text-white hover:bg-white/10 xl:hidden"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="mobile-menu"
@@ -94,7 +108,7 @@ export function SiteHeader() {
         <nav
           id="mobile-menu"
           aria-label="Main"
-          className="max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-line bg-canvas lg:hidden"
+          className="max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-line bg-canvas xl:hidden"
         >
           <ul className="container-page py-3">
             {navItems.map((item) => (
@@ -109,11 +123,7 @@ export function SiteHeader() {
               </li>
             ))}
             <li className="pt-4 pb-2">
-              <Link
-                href="/#quote-form"
-                onClick={() => setOpen(false)}
-                className="btn btn-primary w-full"
-              >
+              <Link href="/#quote-form" onClick={() => setOpen(false)} className="btn btn-primary w-full">
                 Get a free quote
               </Link>
             </li>

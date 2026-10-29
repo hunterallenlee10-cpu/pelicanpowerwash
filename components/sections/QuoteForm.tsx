@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, ChevronDown, LoaderCircle } from "lucide-react";
 import { business, phoneHref, quoteServiceOptions } from "@/data/site";
+import { PREFILL_EVENT, type PrefillDetail } from "@/lib/price-store";
+import { formServicesFor, parseSelection, priceSelection, quoteToText, selectionNotes } from "@/lib/pricing";
 
 const propertyTypes = [
   "Single Family Home",
@@ -57,6 +59,27 @@ export function QuoteForm() {
   // non-sensitive code (email_not_configured, email_rejected) plus the HTTP
   // status, which is what a failure report needs to be actionable.
   const [errorReference, setErrorReference] = useState("");
+
+  // Pre-fill from the instant price builder: its "Lock in this price" button,
+  // or a shared link carrying ?items=.
+  useEffect(() => {
+    const apply = (detail: PrefillDetail) => {
+      setForm((prev) => ({
+        ...prev,
+        services: [...new Set([...prev.services, ...detail.services])],
+        description: detail.description || prev.description,
+      }));
+    };
+    const params = new URLSearchParams(window.location.search);
+    const shared = parseSelection(params.get("items"));
+    if (shared.items.length) {
+      const summary = [quoteToText(priceSelection(shared)), selectionNotes(shared)].filter(Boolean).join("\n");
+      apply({ services: formServicesFor(shared), description: `From the instant price builder:\n${summary}` });
+    }
+    const onPrefill = (event: Event) => apply((event as CustomEvent<PrefillDetail>).detail);
+    window.addEventListener(PREFILL_EVENT, onPrefill);
+    return () => window.removeEventListener(PREFILL_EVENT, onPrefill);
+  }, []);
 
   const update = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

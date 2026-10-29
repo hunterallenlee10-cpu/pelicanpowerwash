@@ -76,7 +76,7 @@ export function PhotoSlot({
         </div>
       ) : (
         <Image
-          src="/pelican/logo.png"
+          src="/pelican/logo-320.webp"
           alt=""
           width={160}
           height={160}

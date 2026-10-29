@@ -25,12 +25,9 @@ export function Services() {
   return (
     <section id="services" className="py-20 md:py-28">
       <div className="container-page">
-        <h2 className="h-section max-w-3xl">
-          The right method for every surface.
-        </h2>
+        <h2 className="h-section max-w-3xl">Everything we clean.</h2>
         <p className="lede mt-5">
-          Soft wash for siding, roofs and wood. Pressure for concrete. You get a
-          clean result without stripped paint or etched driveways.
+          Homes, businesses and the tricky surfaces in between.
         </p>
 
         <div

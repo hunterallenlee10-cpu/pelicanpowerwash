@@ -352,54 +352,72 @@ export const gallery: GalleryItem[] = [
 ];
 
 export type PriceItem = {
+  /** Stable id the instant price builder (lib/pricing.ts) keys off. */
+  id: string;
   name: string;
   detail: string;
   price: string;
   /** Second price line, e.g. multiple trash cans. */
-  options?: { label: string; price: string }[];
+  options?: { label: string; price: string; amount: number }[];
+  /** Price in whole dollars, or null for "Free quote". Must match `price`. */
+  amount: number | null;
   popular?: boolean;
 };
 
 export const pricing: PriceItem[] = [
   {
+    id: "total-front",
     name: "Total front of house",
     detail: "House wash, front concrete and patio",
     price: "$349",
+    amount: 349,
     popular: true,
   },
   {
+    id: "house-concrete",
     name: "House concrete",
     detail: "Front, back and stairs",
     price: "$275",
+    amount: 275,
   },
   {
+    id: "front-concrete",
     name: "Front concrete only",
     detail: "Driveway and front patio",
     price: "$149",
+    amount: 149,
   },
   {
+    id: "basement-stairs",
     name: "Basement walkout stairs",
     detail: "Add-on to any other service",
     price: "$149",
+    amount: 149,
   },
   {
+    id: "trash-cans",
     name: "Trash can cleaning",
     detail: "Washed and deodorized",
     price: "$20",
+    amount: 20,
     options: [
-      { label: "1 can", price: "$20" },
-      { label: "2 cans", price: "$30" },
+      { label: "1 can", price: "$20", amount: 20 },
+      { label: "2 cans", price: "$30", amount: 30 },
     ],
   },
   {
+    id: "full-exterior",
     name: "Full exterior",
     detail: "Whole home, every surface",
     price: "Free quote",
+    amount: null,
   },
   {
+    id: "commercial",
     name: "Commercial",
     detail: "Storefronts, lots, fleets and more",
     price: "Free quote",
+    amount: null,
   },
 ];
 
@@ -415,8 +433,8 @@ export const paymentMethods = [
 ];
 
 export const discounts = [
-  { label: "Military", value: "10% off" },
-  { label: "Seniors 65+", value: "10% off" },
+  { id: "military", label: "Military", value: "10% off", percent: 10 },
+  { id: "senior", label: "Seniors 65+", value: "10% off", percent: 10 },
 ];
 
 export const pricingPolicies = [
