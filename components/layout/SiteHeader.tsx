@@ -7,8 +7,10 @@ import { Menu, Phone, X } from "lucide-react";
 import { business, phoneHref, showReviewsSection } from "@/data/site";
 
 const navItems = [
+  { label: "Instant price", href: "/#instant-price" },
+  { label: "Try the wand", href: "/#try-the-wand" },
+  { label: "Before & after", href: "/#work" },
   { label: "Services", href: "/#services" },
-  { label: "Our work", href: "/#work" },
   { label: "Pricing", href: "/#pricing" },
   { label: "Reviews", href: "/#testimonials" },
   { label: "Service area", href: "/#service-areas" },
@@ -36,7 +38,7 @@ export function SiteHeader() {
           onClick={() => setOpen(false)}
         >
           <Image
-            src="/pelican/logo.png"
+            src="/pelican/logo-96.webp"
             alt=""
             width={48}
             height={48}
@@ -51,7 +53,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Main" className="hidden lg:block">
+        <nav aria-label="Main" className="hidden xl:block">
           <ul className="flex items-center gap-1">
             {navItems.map((item) => (
               <li key={item.href}>
@@ -69,7 +71,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <a
             href={phoneHref}
-            className="hidden items-center gap-2 px-3 py-2 font-semibold text-ink transition-colors hover:text-accent-text xl:inline-flex"
+            className="hidden items-center gap-2 px-3 py-2 font-semibold text-ink transition-colors hover:text-accent-text 2xl:inline-flex"
           >
             <Phone className="h-4 w-4" strokeWidth={2} aria-hidden />
             {business.phone.display}
@@ -80,7 +82,7 @@ export function SiteHeader() {
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
-            className="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-surface-2 lg:hidden"
+            className="-mr-2 inline-flex h-12 w-12 items-center justify-center rounded-full text-ink hover:bg-surface-2 xl:hidden"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="mobile-menu"
@@ -94,7 +96,7 @@ export function SiteHeader() {
         <nav
           id="mobile-menu"
           aria-label="Main"
-          className="max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-line bg-canvas lg:hidden"
+          className="max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-line bg-canvas xl:hidden"
         >
           <ul className="container-page py-3">
             {navItems.map((item) => (

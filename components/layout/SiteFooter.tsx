@@ -35,10 +35,10 @@ export function SiteFooter() {
     <footer className="bg-navy text-white">
       {/* Closing call to action */}
       <div className="border-b border-white/10">
-        <div className="container-page grid items-center gap-10 py-14 md:grid-cols-[1fr_auto] md:py-16">
+        <div className="container-page grid items-center gap-10 py-14 md:py-16 lg:grid-cols-[1fr_auto]">
           <div className="flex items-center gap-6">
             <Image
-              src="/pelican/logo.png"
+              src="/pelican/logo-240.webp"
               alt=""
               width={120}
               height={120}
@@ -53,7 +53,7 @@ export function SiteFooter() {
               </p>
             </div>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a href={smsHref} className="btn bg-white text-navy hover:bg-white/90">
               <MessageSquare className="h-4 w-4" aria-hidden />
               Text {business.phone.display}
@@ -155,7 +155,7 @@ export function SiteFooter() {
       </div>
 
       {/* Extra bottom padding on mobile clears the fixed call/text bar. */}
-      <div className="border-t border-white/10 pb-20 md:pb-0">
+      <div className="border-t border-white/10 pb-20 md:pb-24">
         <div className="container-page flex flex-col gap-2 py-6 text-xs text-white/50 sm:flex-row sm:justify-between">
           <p>
             © {new Date().getFullYear()} {business.name}. All rights reserved.

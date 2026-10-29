@@ -1,7 +1,7 @@
 import { Archivo } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { MobileActionBar } from '@/components/layout/MobileActionBar'
+import { QuoteBar } from '@/components/layout/QuoteBar'
 import { business, serviceCategories, serviceTowns } from '@/data/site'
 import './globals.css'
 
@@ -102,7 +102,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         {children}
-        <MobileActionBar />
+        <QuoteBar />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
