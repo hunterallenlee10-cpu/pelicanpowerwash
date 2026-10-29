@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, ChevronDown, LoaderCircle } from "lucide-react";
 import { business, phoneHref, quoteServiceOptions } from "@/data/site";
 import { PREFILL_EVENT, type PrefillDetail } from "@/lib/price-store";
-import { formServicesFor, parseSelection, priceSelection, quoteToText } from "@/lib/pricing";
+import { formServicesFor, parseSelection, priceSelection, quoteToText, selectionNotes } from "@/lib/pricing";
 
 const propertyTypes = [
   "Single Family Home",
@@ -73,7 +73,7 @@ export function QuoteForm() {
     const params = new URLSearchParams(window.location.search);
     const shared = parseSelection(params.get("items"));
     if (shared.items.length) {
-      const summary = quoteToText(priceSelection(shared));
+      const summary = [quoteToText(priceSelection(shared)), selectionNotes(shared)].filter(Boolean).join("\n");
       apply({ services: formServicesFor(shared), description: `From the instant price builder:\n${summary}` });
     }
     const onPrefill = (event: Event) => apply((event as CustomEvent<PrefillDetail>).detail);

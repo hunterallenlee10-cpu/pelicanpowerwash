@@ -71,13 +71,13 @@ const SPECS = [
   ["k4-final-dirty-16x9", "key16", "dirty"],
   ["k1-driveway-clean-16x9", "key16", "clean"],
   ["k1-driveway-dirty-16x9", "key16", "dirty"],
-  ["k1-driveway-mid-16x9", "key16", "mid"],
+  ["k1-driveway-mid-16x9", "key16", "mid", { optional: true }],
   ["k2-roof-clean-16x9", "key16", "clean"],
   ["k2-roof-dirty-16x9", "key16", "dirty"],
-  ["k2-roof-mid-16x9", "key16", "mid"],
+  ["k2-roof-mid-16x9", "key16", "mid", { optional: true }],
   ["k3-siding-clean-16x9", "key16", "clean"],
   ["k3-siding-dirty-16x9", "key16", "dirty"],
-  ["k3-siding-mid-16x9", "key16", "mid"],
+  ["k3-siding-mid-16x9", "key16", "mid", { optional: true }],
   ["k0-final-clean-9x16", "key9", "clean"],
   ["k4-final-dirty-9x16", "key9", "dirty"],
   ["k1-driveway-clean-9x16", "key9", "clean"],
@@ -87,20 +87,20 @@ const SPECS = [
   ["k3-siding-clean-9x16", "key9", "clean"],
   ["k3-siding-dirty-9x16", "key9", "dirty"],
   ["g1-driveway-topdown-clean", "game", "clean"],
-  ["g2-driveway-topdown-dirty", "game", "dirty"],
-  ["g3-grime-map", "game", "neutral"],
-  ["t-siding", "tile", "neutral"],
-  ["t-roof", "tile", "neutral"],
-  ["t-concrete", "tile", "neutral"],
-  ["t-deck", "tile", "neutral"],
-  ["t-pavers", "tile", "neutral"],
-  ["t-brick", "tile", "neutral"],
-  ["t-fence", "tile", "neutral"],
-  ["t-stucco", "tile", "neutral"],
-  ["h1-house-iso", "illus", "neutral"],
+  ["g2-driveway-topdown-dirty", "game", "dirty", { optional: true }],
+  ["g3-grime-map", "game", "neutral", { optional: true }],
+  ["t-siding", "tile", "neutral", { optional: true }],
+  ["t-roof", "tile", "neutral", { optional: true }],
+  ["t-concrete", "tile", "neutral", { optional: true }],
+  ["t-deck", "tile", "neutral", { optional: true }],
+  ["t-pavers", "tile", "neutral", { optional: true }],
+  ["t-brick", "tile", "neutral", { optional: true }],
+  ["t-fence", "tile", "neutral", { optional: true }],
+  ["t-stucco", "tile", "neutral", { optional: true }],
+  ["h1-house-iso", "illus", "neutral", { optional: true }],
   ["h1-house-iso-dirty", "illus", "dirty", { optional: true }],
   ["e1-og-bg", "og", "clean"],
-  ["e2-mist", "mist", "black"],
+  ["e2-mist", "mist", "black", { optional: true }],
 ].map(([key, kind, tone, opts = {}]) => ({ key, kind, tone, ...opts }));
 
 const VIDEOS = [
@@ -261,6 +261,16 @@ async function processVideos(cache, manifest) {
     manifest.frames[v.chapter] = { count: 0, fps: 0, width: 0, height: 0, bytes: 0, base: "", poster: null };
   }
   if (!found.length) {
+    // Raw clips are large and kept out of git. If frames were extracted
+    // before, keep them rather than falling back to the still wipe.
+    const kept = cache.videos?.result;
+    if (kept && Object.values(kept.frames).every((f) => existsSync(path.join(OUT, "frames", f.base.split("/").filter(Boolean).pop())))) {
+      Object.assign(manifest.frames, kept.frames);
+      manifest.budget = kept.budget;
+      manifest.missing = manifest.missing.filter((m) => !m.endsWith(".mp4"));
+      log("no clips in inbox; keeping the frames extracted earlier");
+      return;
+    }
     await fs.rm(path.join(OUT, "frames"), { recursive: true, force: true });
     await fs.rm(path.join(OUT, "posters"), { recursive: true, force: true });
     log("no videos in inbox; desktop story uses the still-image wipe");

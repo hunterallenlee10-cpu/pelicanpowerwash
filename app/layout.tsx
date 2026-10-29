@@ -1,4 +1,4 @@
-import { Archivo } from 'next/font/google'
+import { Archivo, IBM_Plex_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { QuoteBar } from '@/components/layout/QuoteBar'
@@ -9,6 +9,13 @@ const archivo = Archivo({
   subsets: ['latin'],
   axes: ['wdth'],
   variable: '--font-archivo',
+  display: 'swap',
+})
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['500', '600'],
+  variable: '--font-plex-mono',
   display: 'swap',
 })
 
@@ -46,11 +53,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f4f7f9' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a1626' },
-  ],
+  colorScheme: 'dark',
+  themeColor: '#07090c',
   width: 'device-width',
   initialScale: 1,
 }
@@ -95,7 +99,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={archivo.variable}>
+    <html lang="en" className={`${archivo.variable} ${plexMono.variable}`}>
       <body>
         <script
           type="application/ld+json"

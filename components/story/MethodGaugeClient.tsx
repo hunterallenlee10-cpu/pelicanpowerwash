@@ -2,15 +2,7 @@
 
 import { useRef, useState } from "react";
 import { track } from "@/lib/analytics";
-import { GAUGE_MAX_PSI, psiLabel, surfaceSummary, type Surface } from "@/data/surfaces";
-
-export type TileImage = {
-  avif: string;
-  webp: string;
-  src: string;
-  width: number;
-  height: number;
-};
+import { GAUGE_MAX_PSI, psiRange, surfaceSummary, type Surface } from "@/data/surfaces";
 
 // Gauge geometry (SVG user units).
 const CX = 130;
@@ -29,11 +21,9 @@ const TICKS = Array.from({ length: GAUGE_MAX_PSI / 250 + 1 }, (_, i) => i * 250)
 
 export function MethodGaugeClient({
   surfaces,
-  tiles,
   intro,
 }: {
   surfaces: Surface[];
-  tiles: Record<string, TileImage | null>;
   intro: React.ReactNode;
 }) {
   const [index, setIndex] = useState(0);
@@ -44,7 +34,6 @@ export function MethodGaugeClient({
   const bandStart = Math.max(0, Math.min(min, max - MIN_BAND));
   const bandLength = Math.max(max - min, MIN_BAND);
   const needleDeg = (mid / GAUGE_MAX_PSI) * 180;
-  const tile = tiles[surface.id];
 
   const select = (next: number, focus = false) => {
     setIndex(next);
@@ -65,10 +54,10 @@ export function MethodGaugeClient({
   };
 
   return (
-    <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start lg:gap-16">
+    <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
       <div>
         {intro}
-        <p id="surface-label" className="mt-10 text-sm font-semibold text-ink-2">
+        <p id="surface-label" className="label-mono mt-9 text-ink-2">
           Pick a surface
         </p>
         <div
@@ -92,7 +81,7 @@ export function MethodGaugeClient({
                 onKeyDown={(event) => onKey(event, i)}
                 className={`min-h-12 rounded-full px-5 py-2.5 text-[0.95rem] font-semibold transition-colors ${
                   checked
-                    ? "bg-ink text-canvas"
+                    ? "bg-accent text-on-accent"
                     : "border border-line bg-surface text-ink-2 hover:border-ink-2 hover:text-ink"
                 }`}
               >
@@ -106,16 +95,17 @@ export function MethodGaugeClient({
         </p>
       </div>
 
-      <div className="rounded-2xl border border-line bg-surface p-5 sm:p-8">
+      <div className="rounded-3xl border border-line bg-surface p-6 shadow-[0_30px_80px_-40px_rgb(0_0_0/0.8)] sm:p-9">
         <div className="relative mx-auto max-w-md">
           <svg viewBox="0 0 260 150" className="w-full" aria-hidden focusable="false">
-            <path d={ARC} fill="none" stroke="var(--line)" strokeWidth={16} strokeLinecap="round" />
+            <path d={ARC} fill="none" stroke="var(--surface-2)" strokeWidth={14} strokeLinecap="round" />
             <path
               d={ARC}
               pathLength={GAUGE_MAX_PSI}
               fill="none"
               stroke="var(--accent)"
-              strokeWidth={16}
+              strokeWidth={14}
+              strokeLinecap="round"
               strokeDasharray={`${bandLength} ${GAUGE_MAX_PSI * 2}`}
               strokeDashoffset={-bandStart}
               className="transition-[stroke-dasharray,stroke-dashoffset] duration-500 ease-out"
@@ -132,21 +122,23 @@ export function MethodGaugeClient({
                   x2={b.x}
                   y2={b.y}
                   stroke="var(--ink-2)"
+                  strokeOpacity={major ? 0.9 : 0.5}
                   strokeWidth={major ? 2 : 1}
                   strokeLinecap="round"
                 />
               );
             })}
             {TICKS.filter((psi) => psi % 1000 === 0).map((psi) => {
-              const p = polar(psi, R - 38);
+              const p = polar(psi, R - 36);
               return (
                 <text
                   key={psi}
                   x={p.x}
                   y={p.y + 4}
                   textAnchor="middle"
-                  fontSize={11}
+                  fontSize={10}
                   fontWeight={600}
+                  fontFamily="var(--font-mono)"
                   fill="var(--ink-2)"
                 >
                   {psi === 0 ? "0" : `${psi / 1000}k`}
@@ -174,59 +166,29 @@ export function MethodGaugeClient({
             <circle cx={CX} cy={CY} r={9} fill="var(--ink)" />
             <circle cx={CX} cy={CY} r={3.5} fill="var(--surface)" />
           </svg>
-          <p className="mt-1 text-center text-xs font-semibold tracking-[0.14em] text-ink-2 uppercase">
-            PSI
-          </p>
-        </div>
-
-        <div className="mt-6 grid gap-5 border-t border-line pt-6 sm:grid-cols-[8rem_1fr]">
-          <div className="relative aspect-square w-32 overflow-hidden rounded-xl sm:w-full">
-            {tile ? (
-              <picture>
-                <source type="image/avif" srcSet={tile.avif} sizes="128px" />
-                <img
-                  src={tile.src}
-                  srcSet={tile.webp}
-                  sizes="128px"
-                  width={tile.width}
-                  height={tile.height}
-                  loading="lazy"
-                  decoding="async"
-                  alt={`${surface.name}, half dirty and half cleaned`}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              </picture>
-            ) : (
-              <div
-                role="img"
-                aria-label={`${surface.name}, half dirty and half cleaned`}
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(135deg, ${surface.swatch.dirty} 0 50%, ${surface.swatch.clean} 50% 100%)`,
-                }}
-              />
-            )}
+          {/* Big readout under the hub. */}
+          <div className="mt-3 text-center" aria-hidden>
+            <p className="font-display text-4xl leading-none text-ink tabular-nums sm:text-5xl">
+              {psiRange(surface.psi)}
+            </p>
+            <p className="label-mono mt-2 text-ink-2">PSI at the surface</p>
           </div>
-
-          <dl className="space-y-3">
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <dt className="sr-only">Method</dt>
-              <dd className="font-display text-2xl text-ink">{surface.method}</dd>
-              <dt className="sr-only">Pressure</dt>
-              <dd className="rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent-text">
-                {psiLabel(surface.psi)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-semibold text-ink">Why</dt>
-              <dd className="mt-0.5 leading-relaxed text-ink-2">{surface.why}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-semibold text-ink">When it's done wrong</dt>
-              <dd className="mt-0.5 leading-relaxed text-ink-2">{surface.wrong}</dd>
-            </div>
-          </dl>
         </div>
+
+        <dl className="mt-8 grid gap-5 border-t border-line pt-6 sm:grid-cols-2">
+          <div>
+            <dt className="label-mono text-ink-2">Method</dt>
+            <dd className="mt-1.5 text-lg font-bold text-accent-text">{surface.method}</dd>
+          </div>
+          <div>
+            <dt className="label-mono text-ink-2">Tool</dt>
+            <dd className="mt-1.5 text-lg font-semibold text-ink">{surface.tool}</dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="sr-only">Why this method</dt>
+            <dd className="leading-relaxed text-ink-2">{surface.note}</dd>
+          </div>
+        </dl>
       </div>
     </div>
   );

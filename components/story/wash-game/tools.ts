@@ -25,17 +25,17 @@ export type Tool = {
 export const TOOLS: Tool[] = [
   {
     id: "surface",
-    name: "Surface cleaner",
-    color: "#0a7585",
+    name: "Surface cleaner · 20\"",
+    color: "#3fd0e0",
     width: 150,
     strength: 1,
     bands: [[1, 1]],
-    tip: "Our pick. A spinning bar under a hood: one even pass, no stripes, no marks.",
+    tip: "What we use. A spinning bar under a 20-inch hood: one even pass, no stripes, no marks.",
     pick: true,
   },
   {
     id: "green",
-    name: "Green 25°",
+    name: "Wand · 25° tip",
     color: "#2e9d4f",
     width: 70,
     strength: 0.45,
@@ -44,7 +44,7 @@ export const TOOLS: Tool[] = [
       [0.6, 0.45],
       [0.25, 0.6],
     ],
-    tip: "Takes about two passes. Skip the overlap and you get zebra stripes.",
+    tip: "Takes about two passes. Miss the overlap and you get zebra stripes.",
   },
   {
     id: "yellow",
@@ -92,12 +92,15 @@ export const TOOLS: Tool[] = [
   },
 ];
 
+/** The two tools shown in the game; the rest stay in the engine. */
+export const VISIBLE_TOOLS: ToolId[] = ["surface", "green"];
+
 export function toolById(id: ToolId): Tool {
   return TOOLS.find((t) => t.id === id) ?? TOOLS[0];
 }
 
 export function gradeFor(seconds: number, damage: number): string {
-  if (damage === 0) return seconds <= 45 ? "A+" : "A";
+  if (damage === 0) return seconds <= 30 ? "A+" : seconds <= 75 ? "A" : "B";
   if (damage <= 2) return "B";
   if (damage <= 5) return "C";
   return "D";

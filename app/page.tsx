@@ -14,26 +14,29 @@ import { ScrollStory } from "@/components/story/ScrollStory";
 import { InstantPrice } from "@/components/story/InstantPrice";
 import { MethodGauge } from "@/components/story/MethodGauge";
 import { WashGame } from "@/components/story/WashGame";
+import { HowWeWork } from "@/components/story/HowWeWork";
+import { driveStory, houseStory } from "@/data/story";
 
 /*
- * The one-page site. Section ids are the nav targets: top (the scroll story),
- * instant-price, work, methods, try-the-wand, services, pricing, process,
- * about, testimonials, service-areas, faq, quote-form.
- *
- * Conversion first: the price builder sits straight after the hero, and the
- * quote bar (app/layout.tsx) keeps a quote button in reach everywhere.
+ * The one-page site, in the order of a scroll-through:
+ * driveway story (hero) -> try the wand -> house & roof story ->
+ * before/after -> pressure gauge -> instant quote -> how we work ->
+ * then the reference sections (services, packages, process, about, area,
+ * FAQ, quote form). The bottom quote bar (app/layout.tsx) is always in reach.
  */
 export default function HomePage() {
   return (
     <>
       <SiteHeader />
       <main>
-        <ScrollStory />
-        <TrustBar />
-        <InstantPrice />
+        <ScrollStory story={driveStory} heading="h1" />
+        <WashGame />
+        <ScrollStory story={houseStory} heading="h2" />
         <Work />
         <MethodGauge />
-        <WashGame />
+        <InstantPrice />
+        <HowWeWork />
+        <TrustBar />
         <Services />
         <Pricing />
         <Process />

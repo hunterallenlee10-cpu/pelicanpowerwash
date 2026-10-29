@@ -102,11 +102,23 @@ export const DEFAULT_CONFIG: PricingConfig = {
   stackDiscounts: false,
 };
 
+/** Informational only: Pelican has no size-based prices. Goes to the quote. */
+export const HOME_SIZES = [
+  { id: "townhome", label: "Townhome" },
+  { id: "rambler", label: "Rambler" },
+  { id: "2-story", label: "2-story" },
+  { id: "large", label: "Large or 3-story" },
+] as const;
+export type HomeSize = (typeof HOME_SIZES)[number]["id"];
+
 export type Selection = {
   items: ItemId[];
   trashCans?: 1 | 2;
   military?: boolean;
   senior?: boolean;
+  home?: HomeSize;
+  /** Heavy green or black growth (shady or wooded lot). Informational. */
+  heavy?: boolean;
 };
 
 export type Quote = {
@@ -229,6 +241,10 @@ export function parseSelection(param: string | null | undefined): Selection {
     const token = raw.trim().toLowerCase();
     if (token === "military") sel.military = true;
     else if (token === "senior") sel.senior = true;
+    else if (token === "heavy") sel.heavy = true;
+    else if (token.startsWith("home-") && HOME_SIZES.some((h) => h.id === token.slice(5))) {
+      sel.home = token.slice(5) as HomeSize;
+    }
     else if (token === "trash2") {
       if (!sel.items.includes("trash")) sel.items.push("trash");
       sel.trashCans = 2;
@@ -243,6 +259,8 @@ export function serializeSelection(sel: Selection): string {
   const tokens: string[] = sel.items.map((id) => (id === "trash" && sel.trashCans === 2 ? "trash2" : id));
   if (sel.military) tokens.push("military");
   if (sel.senior) tokens.push("senior");
+  if (sel.home) tokens.push(`home-${sel.home}`);
+  if (sel.heavy) tokens.push("heavy");
   return tokens.join(",");
 }
 
@@ -261,6 +279,15 @@ export function quoteToText(quote: Quote): string {
   if (quote.custom.length) {
     lines.push(`Needs a quote: ${quote.custom.map((c) => c.label).join(", ")}`);
   }
+  return lines.join("\n");
+}
+
+/** Extra lines for the quote form / SMS: home type and heavy growth. */
+export function selectionNotes(sel: Selection): string {
+  const lines: string[] = [];
+  const home = HOME_SIZES.find((h) => h.id === sel.home);
+  if (home) lines.push(`Home: ${home.label}`);
+  if (sel.heavy) lines.push("Heavy green or black growth (shady or wooded lot)");
   return lines.join("\n");
 }
 

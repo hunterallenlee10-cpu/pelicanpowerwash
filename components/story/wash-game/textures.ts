@@ -1,15 +1,20 @@
 /**
- * Texture builders for the wash game. When the Higgsfield textures are still
- * placeholders, the slab is drawn procedurally so the game works today.
+ * Texture builders for the wash game. The clean slab is the Higgsfield
+ * photo when it exists (procedural otherwise). Unless a real dirty photo
+ * exists too, the grime is a procedural "grime map" multiplied over the
+ * clean slab, so the concrete's own texture shows through the dirt. Stain
+ * placement comes from data/game-stains.ts.
  */
+import { SLAB, STAINS, type Stain } from "@/data/game-stains";
+
 export const TW = 1280;
 export const TH = 720;
 
 /** Concrete area (the lawn strips sit above and below it). */
-const SLAB_TOP = 70;
-const SLAB_BOTTOM = 650;
-const JOINT_X = 640;
-const JOINT_Y = 360;
+const SLAB_TOP = Math.round((SLAB.top / 100) * TH);
+const SLAB_BOTTOM = Math.round((SLAB.bottom / 100) * TH);
+const JOINT_X = Math.round((SLAB.jointX / 100) * TW);
+const JOINT_Y = Math.round((SLAB.jointY / 100) * TH);
 
 export function makeCanvas(w = TW, h = TH): HTMLCanvasElement {
   const c = document.createElement("canvas");
@@ -127,17 +132,20 @@ export function proceduralClean(ctx: CanvasRenderingContext2D) {
   joint(0, JOINT_Y, TW, JOINT_Y);
 }
 
-/** Grime on a transparent layer, only over the slab. */
-export function proceduralDirt(ctx: CanvasRenderingContext2D) {
+const px = (st: Stain) => ({ x: (st.x / 100) * TW, y: (st.y / 100) * TH, r: (st.r / 100) * TW });
+
+/**
+ * Grime map on a WHITE background, meant to be multiplied over the clean
+ * slab: white leaves the concrete alone, darker/tinted pixels stain it.
+ */
+export function proceduralGrimeMap(ctx: CanvasRenderingContext2D) {
   const r = rng(42);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, TW, TH);
   ctx.save();
   ctx.beginPath();
-  ctx.rect(0, SLAB_TOP - 4, TW, SLAB_BOTTOM - SLAB_TOP + 8);
+  ctx.rect(0, SLAB_TOP - 2, TW, SLAB_BOTTOM - SLAB_TOP + 4);
   ctx.clip();
-
-  // Mildew film over the whole slab
-  ctx.fillStyle = "rgba(62,64,48,0.55)";
-  ctx.fillRect(0, 0, TW, TH);
 
   const blob = (x: number, y: number, rad: number, color: string, sx = 1, sy = 1, rot = 0) => {
     ctx.save();
@@ -152,84 +160,142 @@ export function proceduralDirt(ctx: CanvasRenderingContext2D) {
     ctx.restore();
   };
 
-  // Mottled darker patches
-  for (let i = 0; i < 150; i++) {
-    blob(r() * TW, SLAB_TOP + r() * (SLAB_BOTTOM - SLAB_TOP), 40 + r() * 150, `rgba(38,42,30,${(0.12 + r() * 0.25).toFixed(2)})`);
+  // Overall mildew film: a gray-olive cast, uneven at several scales.
+  ctx.fillStyle = "rgb(178,176,160)";
+  ctx.fillRect(0, 0, TW, TH);
+  for (let i = 0; i < 220; i++) {
+    blob(r() * TW, SLAB_TOP + r() * (SLAB_BOTTOM - SLAB_TOP), 30 + r() * 170, `rgba(92,96,72,${(0.08 + r() * 0.2).toFixed(2)})`, 1, 0.6 + r() * 0.8, r() * Math.PI);
   }
-
-  // Two tire-track bands running the length of the slab
-  for (const cy of [235, 480]) {
-    const g = ctx.createLinearGradient(0, cy - 55, 0, cy + 55);
-    g.addColorStop(0, "rgba(24,24,22,0)");
-    g.addColorStop(0.5, "rgba(24,24,22,0.5)");
-    g.addColorStop(1, "rgba(24,24,22,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, cy - 55, TW, 110);
-    ctx.strokeStyle = "rgba(15,15,14,0.18)";
-    ctx.lineWidth = 3;
-    for (let x = 0; x < TW; x += 14) {
-      ctx.beginPath();
-      ctx.moveTo(x, cy - 26);
-      ctx.lineTo(x + 6, cy + 26);
-      ctx.stroke();
-    }
+  for (let i = 0; i < 90; i++) {
+    blob(r() * TW, SLAB_TOP + r() * (SLAB_BOTTOM - SLAB_TOP), 40 + r() * 120, `rgba(236,234,224,${(0.1 + r() * 0.25).toFixed(2)})`);
   }
-
-  // Leaf-tannin stains in three clusters
-  for (const [cx, cy] of [
-    [220, 140],
-    [760, 600],
-    [1130, 160],
+  // Darker where water sits: along both lawn edges.
+  for (const [y0, y1] of [
+    [SLAB_TOP, SLAB_TOP + 70],
+    [SLAB_BOTTOM, SLAB_BOTTOM - 70],
   ]) {
-    for (let i = 0; i < 22; i++) {
-      blob(
-        cx + (r() - 0.5) * 260,
-        cy + (r() - 0.5) * 120,
-        10 + r() * 16,
-        `rgba(132,72,26,${(0.35 + r() * 0.3).toFixed(2)})`,
-        1,
-        0.45,
-        r() * Math.PI
-      );
+    const g = ctx.createLinearGradient(0, y0, 0, y1);
+    g.addColorStop(0, "rgba(70,84,44,0.55)");
+    g.addColorStop(1, "rgba(70,84,44,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, Math.min(y0, y1), TW, Math.abs(y1 - y0));
+  }
+
+  for (const st of STAINS) {
+    const { x, y, r: rad } = px(st);
+    if (st.id === "mildew") {
+      // Black mildew: dense, blotchy, darkest in the middle.
+      blob(x, y, rad * 1.2, "rgba(48,52,36,0.45)", 1.2, 0.8);
+      for (let i = 0; i < 120; i++) {
+        const a = r() * Math.PI * 2;
+        const d = Math.sqrt(r()) * rad;
+        blob(x + Math.cos(a) * d, y + Math.sin(a) * d * 0.8, 10 + r() * rad * 0.4, `rgba(22,26,16,${(0.25 + r() * 0.35).toFixed(2)})`, 1, 0.7, r() * Math.PI);
+      }
+    } else if (st.id === "oil") {
+      for (let i = 0; i < 9; i++) {
+        blob(x + (r() - 0.5) * rad * 0.7, y + (r() - 0.5) * rad * 0.5, rad * (0.35 + r() * 0.45), "rgba(18,16,14,0.55)", 1.35, 0.85, r());
+      }
+      blob(x, y, rad * 1.5, "rgba(60,52,44,0.25)", 1.4, 0.9);
+    } else if (st.id === "tracks") {
+      // Two tire bands running the length of the slab.
+      for (const off of [-0.55, 0.55]) {
+        const cy = y + off * rad;
+        const band = rad * 0.42;
+        const g = ctx.createLinearGradient(0, cy - band, 0, cy + band);
+        g.addColorStop(0, "rgba(30,30,28,0)");
+        g.addColorStop(0.5, "rgba(30,30,28,0.5)");
+        g.addColorStop(1, "rgba(30,30,28,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, cy - band, TW, band * 2);
+        // Faint, uneven tread marks and darker patches where tires stop.
+        for (let tx = 0; tx < TW; tx += 9 + r() * 10) {
+          ctx.strokeStyle = `rgba(20,20,18,${(0.03 + r() * 0.07).toFixed(2)})`;
+          ctx.lineWidth = 2 + r() * 2;
+          ctx.beginPath();
+          ctx.moveTo(tx, cy - band * (0.3 + r() * 0.3));
+          ctx.lineTo(tx + 4 + r() * 3, cy + band * (0.3 + r() * 0.3));
+          ctx.stroke();
+        }
+        for (let i = 0; i < 6; i++) {
+          blob(r() * TW, cy + (r() - 0.5) * band, band * (0.8 + r()), "rgba(26,26,24,0.25)", 2.5, 0.6);
+        }
+      }
+    } else if (st.id === "rust") {
+      // A fan of orange-brown spray from a sprinkler at the slab's edge.
+      ctx.filter = "blur(2px)";
+      const ox = x + rad * 0.8;
+      blob(ox - rad * 0.5, y, rad * 1.1, "rgba(184,96,36,0.35)", 1.1, 0.9);
+      for (let i = 0; i < 140; i++) {
+        const a = Math.PI + (r() - 0.5) * 1.6;
+        const d = Math.pow(r(), 0.7) * rad * 1.5;
+        blob(ox + Math.cos(a) * d, y + Math.sin(a) * d, 4 + r() * 14, `rgba(${140 + Math.floor(r() * 35)},${72 + Math.floor(r() * 25)},34,${(0.25 + r() * 0.35).toFixed(2)})`);
+      }
+      ctx.filter = "none";
     }
   }
 
-  // Oil spot near the garage end
-  for (let i = 0; i < 7; i++) {
-    blob(1020 + (r() - 0.5) * 50, 420 + (r() - 0.5) * 40, 35 + r() * 30, "rgba(16,14,12,0.6)", 1.3, 0.85, r());
-  }
-
-  // Algae in the joints and along the lawn edges
-  ctx.shadowColor = "rgba(70,115,35,0.9)";
-  ctx.shadowBlur = 14;
-  ctx.strokeStyle = "rgba(74,114,38,0.8)";
+  // Algae and weeds along the control joints and lawn edges.
+  const weeds = STAINS.find((st) => st.id === "weeds");
   ctx.lineCap = "round";
-  const algae = (x1: number, y1: number, x2: number, y2: number, w: number) => {
+  const algae = (x1: number, y1: number, x2: number, y2: number, w: number, a: number) => {
+    ctx.strokeStyle = `rgba(66,104,34,${a})`;
     ctx.lineWidth = w;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
-    const steps = 24;
+    const steps = 30;
     for (let i = 1; i <= steps; i++) {
       const t = i / steps;
-      ctx.lineTo(x1 + (x2 - x1) * t + (r() - 0.5) * 6, y1 + (y2 - y1) * t + (r() - 0.5) * 6);
+      ctx.lineTo(x1 + (x2 - x1) * t + (r() - 0.5) * 5, y1 + (y2 - y1) * t + (r() - 0.5) * 5);
     }
     ctx.stroke();
   };
-  algae(JOINT_X, SLAB_TOP, JOINT_X, SLAB_BOTTOM, 12);
-  algae(0, JOINT_Y, TW, JOINT_Y, 12);
-  algae(0, SLAB_TOP + 4, TW, SLAB_TOP + 4, 22);
-  algae(0, SLAB_BOTTOM - 4, TW, SLAB_BOTTOM - 4, 22);
-  ctx.shadowBlur = 0;
+  ctx.filter = "blur(3px)";
+  algae(JOINT_X, SLAB_TOP, JOINT_X, SLAB_BOTTOM, 11, 0.7);
+  algae(0, JOINT_Y, TW, JOINT_Y, 11, 0.7);
+  algae(0, SLAB_TOP + 5, TW, SLAB_TOP + 5, 18, 0.5);
+  algae(0, SLAB_BOTTOM - 5, TW, SLAB_BOTTOM - 5, 18, 0.5);
+  ctx.filter = "none";
+  if (weeds) {
+    // Weed tufts where the joints cross.
+    ctx.filter = "blur(0.8px)";
+    const { x, y, r: rad } = px(weeds);
+    blob(x, y, rad * 0.9, "rgba(70,110,40,0.35)", 1, 1);
+    for (let i = 0; i < 160; i++) {
+      const alongX = r() < 0.5;
+      const t = (r() - 0.5) * rad * 2.4;
+      const bx = alongX ? x + t : JOINT_X + (r() - 0.5) * 8;
+      const by = alongX ? JOINT_Y + (r() - 0.5) * 8 : y + t;
+      ctx.strokeStyle = `rgba(${45 + Math.floor(r() * 25)},${78 + Math.floor(r() * 35)},${28 + Math.floor(r() * 15)},0.75)`;
+      ctx.lineWidth = 2 + r() * 2.5;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + (r() - 0.5) * 26, by + (r() - 0.5) * 26);
+      ctx.stroke();
+    }
+    ctx.filter = "none";
+  }
   ctx.restore();
 
-  // Break up the film so it reads as grime, not a flat tint
-  const img = ctx.getImageData(0, 0, TW, TH);
+  // Fine grain so the stains don't read as smooth airbrush.
+  const img = ctx.getImageData(0, SLAB_TOP, TW, SLAB_BOTTOM - SLAB_TOP);
   const d = img.data;
-  for (let i = 3; i < d.length; i += 4) {
-    if (!d[i]) continue;
-    d[i] = Math.min(255, d[i] * (0.82 + r() * 0.36));
+  for (let i = 0; i < d.length; i += 4) {
+    const n = 0.88 + r() * 0.24;
+    d[i] = Math.min(255, d[i] * n);
+    d[i + 1] = Math.min(255, d[i + 1] * n);
+    d[i + 2] = Math.min(255, d[i + 2] * n);
   }
-  ctx.putImageData(img, 0, 0);
+  ctx.putImageData(img, 0, SLAB_TOP);
+}
+
+/** Clean slab with the grime map multiplied over it: the full dirty look. */
+export function multiplyGrime(clean: HTMLCanvasElement, grime: CanvasImageSource, out: HTMLCanvasElement) {
+  const o = ctx2d(out, true);
+  o.globalCompositeOperation = "copy";
+  o.drawImage(clean, 0, 0);
+  o.globalCompositeOperation = "multiply";
+  o.drawImage(grime, 0, 0, TW, TH);
+  o.globalCompositeOperation = "source-over";
 }
 
 /**
@@ -246,7 +312,9 @@ export function dirtFromDiff(clean: HTMLCanvasElement, dirtySrc: CanvasImageSour
   const b = img.data;
   for (let i = 0; i < b.length; i += 4) {
     const diff = (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2])) / 3;
-    b[i + 3] = diff < 6 ? 0 : Math.min(255, diff * 4);
+    // Near-opaque wherever it really differs, so the composite reproduces the
+    // dirty photo instead of a faded copy of it.
+    b[i + 3] = diff < 4 ? 0 : Math.min(255, (diff - 4) * 24);
   }
   octx.putImageData(img, 0, 0);
 }

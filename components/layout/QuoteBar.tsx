@@ -3,42 +3,22 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, MessageSquare, Phone } from "lucide-react";
-import { business, phoneHref, smsHref } from "@/data/site";
+import { business, phoneHref, pricing, smsHref } from "@/data/site";
 import { track } from "@/lib/analytics";
 import { formatMoney } from "@/lib/pricing";
 import { usePriceState } from "@/lib/price-store";
 
 /**
- * Quote CTA that stays in reach at every scroll position: a thumb bar on
- * phones, a floating pill on larger screens. Shows once the hero story is
- * 30% through (or right away on pages without it) and steps aside while the
- * quote form itself is on screen. Picks up the live Instant Price total.
+ * Bottom bar that keeps a quote button in reach at every scroll position: a
+ * thumb bar on phones, a slim trust bar on larger screens. Steps aside while
+ * the quote form itself is on screen and picks up the live Instant Price
+ * total.
  */
 export function QuoteBar() {
-  const [pastHero, setPastHero] = useState(false);
   const [formInView, setFormInView] = useState(false);
   const price = usePriceState();
 
   useEffect(() => {
-    const hero = document.getElementById("top");
-    let raf = 0;
-    const check = () => {
-      raf = 0;
-      if (!hero || !hero.classList.contains("story")) {
-        setPastHero(true);
-        return;
-      }
-      const r = hero.getBoundingClientRect();
-      const total = Math.max(1, r.height - window.innerHeight);
-      setPastHero(-r.top / total > 0.3);
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(check);
-    };
-    check();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-
     const form = document.getElementById("quote-form");
     const io = form
       ? new IntersectionObserver(([entry]) => setFormInView(entry.isIntersecting), { threshold: 0.15 })
@@ -55,24 +35,22 @@ export function QuoteBar() {
     document.addEventListener("click", onClick);
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
       document.removeEventListener("click", onClick);
       io?.disconnect();
-      cancelAnimationFrame(raf);
     };
   }, []);
 
-  const visible = pastHero && !formInView;
+  const visible = !formInView;
   const priceLabel = price.hasPrice ? `Your price: ${formatMoney(price.total)}` : "Get my price";
+  const fromPrice = Math.min(...pricing.filter((p) => p.amount && p.amount >= 100).map((p) => p.amount!));
 
   return (
     <div
       data-quote-bar
       inert={!visible}
       aria-hidden={!visible}
-      className={`fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ease-out md:inset-x-auto md:bottom-5 md:left-1/2 md:-translate-x-1/2 ${
-        visible ? "translate-y-0" : "translate-y-[130%]"
+      className={`fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ease-out md:inset-x-auto md:bottom-4 md:left-1/2 md:w-[min(56rem,calc(100vw-2rem))] md:-translate-x-1/2 ${
+        visible ? "translate-y-0" : "translate-y-[140%]"
       }`}
     >
       {/* Phones: thumb bar */}
@@ -92,15 +70,22 @@ export function QuoteBar() {
         </div>
       </div>
 
-      {/* Tablets and up: floating pill */}
-      <div className="hidden items-center gap-4 rounded-full border border-line bg-surface/95 py-2 pr-2 pl-6 shadow-[0_18px_50px_-18px_rgb(14_36_64/0.45)] backdrop-blur-md md:flex">
-        <p className="text-[0.95rem] font-medium whitespace-nowrap text-ink">
-          Free written quote <span className="text-ink-2">·</span> reply within {business.responseTime}
+      {/* Tablets and up: slim trust bar */}
+      <div className="hidden items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#0b0e12]/90 py-2 pr-2 pl-5 shadow-[0_18px_50px_-18px_rgb(0_0_0/0.8)] backdrop-blur-md md:flex">
+        <p className="label-mono truncate text-white/70">
+          Free written quotes <span className="text-white/30">·</span> Locally owned{" "}
+          <span className="text-white/30">·</span> Reply in {business.responseTime}
+          <span className="ml-3 text-white">Packages from ${fromPrice}</span>
         </p>
-        <Link href="/#instant-price" className="btn btn-primary min-h-12 px-5 py-2.5">
-          {priceLabel}
-          <ArrowRight className="h-4 w-4" aria-hidden />
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <a href={smsHref} className="label-mono hidden px-3 py-2 text-white/80 hover:text-white lg:inline-flex">
+            Text {business.phone.display}
+          </a>
+          <Link href={price.hasPrice ? "/#instant-price" : "/#quote-form"} className="btn btn-primary min-h-11 px-5 py-2">
+            {price.hasPrice ? priceLabel : "Free quote"}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -25,15 +25,15 @@ const viewports = [
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const errors = {};
 
-async function scrollStory(page, p) {
-  await page.evaluate((p) => {
-    const track = document.querySelector(".story-track");
-    const stage = document.querySelector(".story-stage");
+async function scrollStory(page, p, id = "top") {
+  await page.evaluate(([p, id]) => {
+    const track = document.querySelector(`#${id} .story-track`);
+    const stage = document.querySelector(`#${id} .story-stage`);
     const top = track.getBoundingClientRect().top + window.scrollY;
     const total = track.offsetHeight - stage.clientHeight;
     window.scrollTo({ top: top + total * p, behavior: "instant" });
-  }, p);
-  await wait(900);
+  }, [p, id]);
+  await wait(1100);
 }
 
 async function click(locator) {
@@ -75,9 +75,13 @@ async function run(vp, { reduced = false } = {}) {
     const story = page.locator("#top");
     await story.screenshot({ quality: 72, path: `${OUT}${tag}-story-cards.jpg` });
   } else {
-    for (const p of [0, 0.25, 0.5, 0.75, 1]) {
+    for (const p of [0, 0.3, 0.55, 0.8, 1]) {
       await scrollStory(page, p);
       await page.screenshot({ quality: 72, path: `${OUT}${tag}-hero-${Math.round(p * 100)}.jpg` });
+    }
+    for (const p of [0.1, 0.35, 0.55, 0.75, 0.97]) {
+      await scrollStory(page, p, "house-and-roof");
+      await page.screenshot({ quality: 72, path: `${OUT}${tag}-house-${Math.round(p * 100)}.jpg` });
     }
   }
 
@@ -96,7 +100,7 @@ async function run(vp, { reduced = false } = {}) {
   await toSection(page, "methods");
   for (const [name, file] of [
     ["Roof", "gauge-roof"],
-    ["Concrete driveway", "gauge-concrete"],
+    ["Driveway", "gauge-concrete"],
   ]) {
     await click(page.locator("#methods").getByRole("radio", { name, exact: true }));
     await wait(900);
@@ -121,7 +125,7 @@ async function run(vp, { reduced = false } = {}) {
   }
   await wait(600);
   await page.locator("#try-the-wand").screenshot({ quality: 72, path: `${OUT}${tag}-game-midplay.jpg` });
-  const demo = page.getByRole("button", { name: "Auto-wash demo" });
+  const demo = page.getByRole("button", { name: /Watch a pro/ });
   if (await demo.isVisible().catch(() => false)) {
     await click(demo);
     await page.waitForFunction(() => /9[5-9]|100/.test(document.querySelector("#try-the-wand")?.textContent || ""), null, { timeout: 30000 }).catch(() => {});
@@ -132,6 +136,9 @@ async function run(vp, { reduced = false } = {}) {
   // Before/after gallery.
   await toSection(page, "work");
   await page.locator("#work").screenshot({ quality: 72, path: `${OUT}${tag}-before-after.jpg` });
+
+  await toSection(page, "how-we-work");
+  await page.locator("#how-we-work").screenshot({ quality: 72, path: `${OUT}${tag}-how-we-work.jpg` });
 
   // Quote bar near the pricing section.
   await toSection(page, "pricing");

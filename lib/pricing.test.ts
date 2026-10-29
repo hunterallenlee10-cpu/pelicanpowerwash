@@ -4,6 +4,7 @@ import {
   formServicesFor,
   formatMoney,
   parseSelection,
+  selectionNotes,
   priceSelection,
   quoteToText,
   serializeSelection,
@@ -108,6 +109,13 @@ describe("helpers", () => {
     const sel = parseSelection("siding,driveway,trash2,military,bogus");
     expect(sel).toEqual({ items: ["siding", "driveway", "trash"], trashCans: 2, military: true });
     expect(serializeSelection(sel)).toBe("siding,driveway,trash2,military");
+  });
+
+  it("round-trips home size and heavy growth", () => {
+    const sel = parseSelection("driveway,home-2-story,heavy,home-bogus");
+    expect(sel).toEqual({ items: ["driveway"], home: "2-story", heavy: true });
+    expect(serializeSelection(sel)).toBe("driveway,home-2-story,heavy");
+    expect(selectionNotes(sel)).toBe("Home: 2-story\nHeavy green or black growth (shady or wooded lot)");
   });
 
   it("formats money", () => {

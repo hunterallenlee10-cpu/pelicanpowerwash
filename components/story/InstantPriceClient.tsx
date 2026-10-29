@@ -2,60 +2,41 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Check, MessageSquare, Plus } from "lucide-react";
-import type { HotspotId, Hotspots } from "@/data/hotspots";
 import { business } from "@/data/site";
 import { track } from "@/lib/analytics";
 import {
+  HOME_SIZES,
   ITEMS,
   formServicesFor,
   formatMoney,
-  itemLabel,
   parseSelection,
   priceSelection,
   quoteToText,
+  selectionNotes,
   serializeSelection,
+  type HomeSize,
   type ItemId,
   type Selection,
 } from "@/lib/pricing";
 import { PREFILL_EVENT, setPriceState, type PrefillDetail } from "@/lib/price-store";
 
-export type HousePicture = { avif: string; webp: string; src: string; width: number; height: number };
+const chipBase =
+  "inline-flex min-h-12 items-center gap-2 rounded-full border px-4 text-[0.95rem] font-semibold transition-colors";
+const chipOn = "border-accent bg-accent text-on-accent";
+const chipOff = "border-line bg-surface text-ink hover:border-ink-2";
 
-type Props = {
-  picture: HousePicture | null;
-  dirtyPicture: HousePicture | null;
-  hotspots: Hotspots;
-  policies: string[];
-  /** The fallback SVG house, rendered on the server. */
-  children?: React.ReactNode;
-};
-
-const PIN_IDS = Object.keys({
-  siding: 1,
-  roof: 1,
-  driveway: 1,
-  walkway: 1,
-  patio: 1,
-  deck: 1,
-  fence: 1,
-  basement: 1,
-  trash: 1,
-}) as HotspotId[];
-
-export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, children }: Props) {
+export function InstantPriceClient({ intro }: { intro: React.ReactNode }) {
   const [sel, setSel] = useState<Selection>({ items: [] });
-  const [editing, setEditing] = useState(false);
-  const [pins, setPins] = useState<Hotspots>(hotspots);
   const touched = useRef(false);
   const quote = useMemo(() => priceSelection(sel), [sel]);
 
-  // Restore a shared selection from ?items= and check for the pin editor.
+  // Restore a shared selection from ?items= after hydration.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const restored = parseSelection(params.get("items"));
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of the URL after hydration
-    if (restored.items.length || restored.military || restored.senior) setSel(restored);
-    if (params.get("hotspots") === "edit") setEditing(true);
+    const restored = parseSelection(new URLSearchParams(window.location.search).get("items"));
+    if (restored.items.length || restored.military || restored.senior || restored.home || restored.heavy) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of the URL after hydration
+      setSel(restored);
+    }
   }, []);
 
   useEffect(() => {
@@ -68,27 +49,21 @@ export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, 
     window.history.replaceState(window.history.state, "", url);
   }, [quote, sel]);
 
-  const toggle = (id: ItemId) => {
+  const update = (fn: (prev: Selection) => Selection) => {
     touched.current = true;
-    setSel((prev) => {
+    setSel(fn);
+  };
+  const toggle = (id: ItemId) =>
+    update((prev) => {
       const on = !prev.items.includes(id);
       track("price_item_toggle", { item: id, on });
       return { ...prev, items: on ? [...prev.items, id] : prev.items.filter((i) => i !== id) };
     });
-  };
-  const setFlag = (key: "military" | "senior") => {
-    touched.current = true;
-    setSel((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-  const setCans = (n: 1 | 2) => {
-    touched.current = true;
-    setSel((prev) => ({ ...prev, trashCans: n }));
-  };
+  const setHome = (home: HomeSize) => update((prev) => ({ ...prev, home: prev.home === home ? undefined : home }));
 
-  const summary = quoteToText(quote);
-  const smsBody = summary
-    ? `Hi Pelican, I'd like this quote:\n${summary}`
-    : "Hi Pelican, I'd like a quote.";
+  const notes = selectionNotes(sel);
+  const summary = [quoteToText(quote), notes].filter(Boolean).join("\n");
+  const smsBody = summary ? `Hi Pelican, I'd like this quote:\n${summary}` : "Hi Pelican, I'd like a quote.";
   const smsLink = `sms:${business.phone.e164}?&body=${encodeURIComponent(smsBody)}`;
 
   const lockIn = () => {
@@ -102,102 +77,39 @@ export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, 
     window.setTimeout(() => document.getElementById("fullName")?.focus({ preventScroll: true }), 600);
   };
 
-  // Areas the house picture should show as washed.
-  const washed = new Set<string>(sel.items);
-  if (washed.has("house-full")) washed.add("siding");
-
-  const selectedPins = PIN_IDS.filter((id) => sel.items.includes(id));
-  const mask = selectedPins
-    .map((id) => `radial-gradient(circle at ${pins[id].x}% ${pins[id].y}%, transparent 0 8%, #000 14%)`)
-    .join(", ");
+  const badges: string[] = quote.packages.map((p) => `${p.name} package`);
+  if (quote.discount) badges.push(`${quote.discount.label} ${quote.discount.percent}% applied`);
 
   return (
-    <div className="mt-10 grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
-      {/* House with pins */}
-      <figure className="self-start">
-        <div
-          className="relative overflow-hidden rounded-2xl bg-[#0a1626] shadow-[0_24px_60px_-28px_rgb(14_36_64/0.5)]"
-          data-sel={[...washed].join(" ")}
-        >
-          {picture ? (
-            <>
-              <picture>
-                <source type="image/avif" srcSet={picture.avif} sizes="(min-width: 1024px) 55vw, 100vw" />
-                <source type="image/webp" srcSet={picture.webp} sizes="(min-width: 1024px) 55vw, 100vw" />
-                <img
-                  src={picture.src}
-                  width={picture.width}
-                  height={picture.height}
-                  alt="Illustration of a two-story house with a driveway, walkway, back patio, deck and fence"
-                  loading="lazy"
-                  decoding="async"
-                  className="block h-auto w-full"
-                />
-              </picture>
-              {dirtyPicture && (
-                <picture
-                  className="absolute inset-0"
-                  style={
-                    mask
-                      ? ({
-                          maskImage: mask,
-                          WebkitMaskImage: mask,
-                          maskComposite: "intersect",
-                          WebkitMaskComposite: "source-in",
-                        } as React.CSSProperties)
-                      : undefined
-                  }
-                >
-                  <source type="image/avif" srcSet={dirtyPicture.avif} sizes="(min-width: 1024px) 55vw, 100vw" />
-                  <source type="image/webp" srcSet={dirtyPicture.webp} sizes="(min-width: 1024px) 55vw, 100vw" />
-                  <img src={dirtyPicture.src} alt="" loading="lazy" decoding="async" className="block h-full w-full" />
-                </picture>
-              )}
-            </>
-          ) : (
-            <div role="img" aria-label="Illustration of a two-story house with a driveway, walkway, back patio, deck and fence">
-              {children}
-            </div>
-          )}
+    <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-16">
+      <div>
+        {intro}
 
-          {PIN_IDS.map((id) => {
-            const on = sel.items.includes(id);
-            const item = ITEMS.find((i) => i.id === id)!;
+        <p id="ip-home" className="label-mono mt-9 text-ink-2">
+          Your home
+        </p>
+        <div role="radiogroup" aria-labelledby="ip-home" className="mt-3 flex flex-wrap gap-2">
+          {HOME_SIZES.map((h) => {
+            const on = sel.home === h.id;
             return (
               <button
-                key={id}
+                key={h.id}
                 type="button"
-                aria-hidden
-                tabIndex={-1}
-                onClick={editing ? undefined : () => toggle(id)}
-                onPointerDown={editing ? (e) => startDrag(e, id, setPins) : undefined}
-                className={`hs-pin group ${on ? "is-on" : ""} ${editing ? "cursor-move" : ""}`}
-                style={{ left: `${pins[id].x}%`, top: `${pins[id].y}%` }}
+                role="radio"
+                aria-checked={on}
+                onClick={() => setHome(h.id)}
+                className={`${chipBase} ${on ? chipOn : chipOff}`}
               >
-                <span className="hs-dot">
-                  {on ? <Check className="h-4 w-4" strokeWidth={3} /> : <Plus className="h-4 w-4" strokeWidth={3} />}
-                </span>
-                <span className="hs-chip">
-                  {item.short}
-                  {editing && ` ${pins[id].x}, ${pins[id].y}`}
-                </span>
+                {h.label}
               </button>
             );
           })}
         </div>
-        <figcaption className="mt-3 text-sm text-ink-2">
-          Illustration. Tap a spot on the house, or use the list. Set prices are for typical homes; bigger homes get a
-          free written quote.
-        </figcaption>
-        {editing && <PinEditor pins={pins} />}
-      </figure>
 
-      {/* The real control: chips, toggles and the summary */}
-      <div>
-        <p id="ip-items-label" className="text-sm font-semibold text-ink-2">
-          What should we clean?
+        <p id="ip-items" className="label-mono mt-7 text-ink-2">
+          What should we wash?
         </p>
-        <div role="group" aria-labelledby="ip-items-label" className="mt-3 flex flex-wrap gap-2">
+        <div role="group" aria-labelledby="ip-items" className="mt-3 flex flex-wrap gap-2">
           {ITEMS.map((item) => {
             const on = sel.items.includes(item.id);
             return (
@@ -206,11 +118,7 @@ export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, 
                 type="button"
                 aria-pressed={on}
                 onClick={() => toggle(item.id)}
-                className={`inline-flex min-h-12 items-center gap-2 rounded-full border px-4 text-[0.95rem] font-semibold transition-colors ${
-                  on
-                    ? "border-accent bg-accent text-on-accent"
-                    : "border-line bg-surface text-ink hover:border-ink-2"
-                }`}
+                className={`${chipBase} ${on ? chipOn : chipOff}`}
               >
                 {on ? <Check className="h-4 w-4" strokeWidth={3} aria-hidden /> : <Plus className="h-4 w-4" aria-hidden />}
                 {item.label}
@@ -221,7 +129,7 @@ export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, 
 
         {sel.items.includes("trash") && (
           <div className="mt-4 flex items-center gap-3">
-            <span id="ip-cans" className="text-sm font-semibold text-ink-2">
+            <span id="ip-cans" className="label-mono text-ink-2">
               Trash cans
             </span>
             <div role="radiogroup" aria-labelledby="ip-cans" className="inline-flex rounded-full border border-line bg-surface p-1">
@@ -233,8 +141,8 @@ export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, 
                     type="button"
                     role="radio"
                     aria-checked={on}
-                    onClick={() => setCans(n)}
-                    className={`min-h-10 rounded-full px-4 text-sm font-semibold ${on ? "bg-ink text-canvas" : "text-ink-2"}`}
+                    onClick={() => update((prev) => ({ ...prev, trashCans: n }))}
+                    className={`min-h-10 rounded-full px-4 text-sm font-semibold ${on ? "bg-accent text-on-accent" : "text-ink-2"}`}
                   >
                     {n} can{n > 1 ? "s" : ""}
                   </button>
@@ -244,7 +152,7 @@ export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, 
           </div>
         )}
 
-        <p className="mt-6 text-sm font-semibold text-ink-2">Discounts (10% off, best one applies)</p>
+        <p className="label-mono mt-7 text-ink-2">Discounts · 10%, best one applies</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {(
             [
@@ -258,10 +166,8 @@ export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, 
                 key={key}
                 type="button"
                 aria-pressed={on}
-                onClick={() => setFlag(key)}
-                className={`inline-flex min-h-12 items-center gap-2 rounded-full border px-4 text-[0.95rem] font-semibold transition-colors ${
-                  on ? "border-ink bg-ink text-canvas" : "border-line bg-surface text-ink hover:border-ink-2"
-                }`}
+                onClick={() => update((prev) => ({ ...prev, [key]: !prev[key] }))}
+                className={`${chipBase} ${on ? chipOn : chipOff}`}
               >
                 {on && <Check className="h-4 w-4" strokeWidth={3} aria-hidden />}
                 {label}
@@ -270,130 +176,87 @@ export function InstantPriceClient({ picture, dirtyPicture, hotspots, policies, 
           })}
         </div>
 
-        <QuoteSummary quote={quote} />
-
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          <button type="button" onClick={lockIn} className="btn btn-primary">
-            {quote.hasPrice ? "Lock in this price" : "Request my quote"}
-            <ArrowRight className="h-5 w-5" aria-hidden />
-          </button>
-          <a href={smsLink} className="btn btn-secondary">
-            <MessageSquare className="h-4 w-4" aria-hidden />
-            Text me this quote
-          </a>
-        </div>
-        <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-2">
-          {policies.map((p) => (
-            <li key={p}>{p}</li>
-          ))}
-        </ul>
+        <label className="mt-7 flex min-h-12 cursor-pointer items-center gap-3 text-ink">
+          <input
+            type="checkbox"
+            checked={Boolean(sel.heavy)}
+            onChange={() => update((prev) => ({ ...prev, heavy: !prev.heavy }))}
+            className="h-5 w-5 shrink-0 rounded border-line accent-[var(--accent)]"
+          />
+          Heavy green or black growth (shady or wooded lot)
+        </label>
       </div>
-    </div>
-  );
-}
 
-function QuoteSummary({ quote }: { quote: ReturnType<typeof priceSelection> }) {
-  return (
-    <div className="mt-6 rounded-2xl border border-line bg-surface p-5 sm:p-6">
-      {quote.empty ? (
-        <p className="text-ink-2">Pick anything above (or tap the house) and your price shows up here.</p>
-      ) : (
-        <ul className="space-y-3">
-          {quote.packages.map((p) => (
-            <li key={p.id} className="flex items-baseline justify-between gap-4">
-              <span>
-                <span className="font-semibold text-ink">{p.name}</span>
-                <span className="block text-sm text-ink-2">
-                  Covers {p.covers.map((id) => itemLabel(id).toLowerCase()).join(", ")}
-                  {p.bonus.length > 0 && ` (${p.bonus.map((id) => itemLabel(id).toLowerCase()).join(", ")} included)`}
-                </span>
-              </span>
-              <span className="font-display text-lg text-ink">{formatMoney(p.price)}</span>
-            </li>
-          ))}
-          {quote.lineItems.map((l) => (
-            <li key={l.id} className="flex items-baseline justify-between gap-4">
-              <span className="font-semibold text-ink">{l.label}</span>
-              <span className="font-display text-lg text-ink">{formatMoney(l.price)}</span>
-            </li>
-          ))}
-          {quote.custom.map((c) => (
-            <li key={c.id} className="flex items-baseline justify-between gap-4">
-              <span className="font-semibold text-ink">{c.label}</span>
-              <span className="text-sm font-semibold whitespace-nowrap text-accent-text">Quoted within 24 hrs</span>
-            </li>
-          ))}
-          {quote.discount && (
-            <li className="flex items-baseline justify-between gap-4 text-ink-2">
-              <span>{quote.discount.label} discount ({quote.discount.percent}%)</span>
-              <span className="font-semibold">-{formatMoney(quote.discount.amount)}</span>
-            </li>
-          )}
-        </ul>
-      )}
-      {quote.addonAlone && (
-        <p className="mt-3 text-sm text-ink-2">Basement stairs is an add-on. Pair it with any other service.</p>
-      )}
-      <div className="mt-5 flex items-end justify-between gap-4 border-t border-line pt-4">
-        <span className="text-sm font-semibold text-ink-2">
-          Total
-          <span className="block font-normal">taxes included</span>
-        </span>
-        <span aria-live="polite" aria-atomic className="text-right">
+      {/* Estimate card */}
+      <div className="rounded-3xl border border-line bg-surface p-6 shadow-[0_30px_80px_-40px_rgb(0_0_0/0.8)] sm:p-8 lg:sticky lg:top-28">
+        <p className="label-mono text-ink-2">Your estimate</p>
+        <p aria-live="polite" aria-atomic className="mt-3">
           {quote.hasPrice ? (
-            <>
-              <span className="font-display text-4xl text-ink">{formatMoney(quote.total)}</span>
-              {quote.custom.length > 0 && (
-                <span className="block text-sm text-ink-2">+ the rest quoted within 24 hrs</span>
-              )}
-            </>
+            <span className="font-display text-5xl leading-none text-ink tabular-nums sm:text-6xl">
+              {formatMoney(quote.total)}
+            </span>
           ) : (
-            <span className="font-semibold text-ink-2">{quote.empty ? "$0" : "Quoted within 24 hrs"}</span>
+            <span className="font-display text-3xl leading-tight text-ink">
+              {quote.empty ? "Pick what to wash" : "Quoted within 24 hrs"}
+            </span>
           )}
-        </span>
+        </p>
+
+        {badges.length > 0 && (
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {badges.map((b) => (
+              <li key={b} className="label-mono rounded-full bg-accent-soft px-3 py-1 text-accent-text">
+                {b}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!quote.empty && (
+          <ul className="mt-5 space-y-2 border-t border-line pt-4 text-[0.95rem]">
+            {quote.packages.map((p) => (
+              <li key={p.id} className="flex justify-between gap-4">
+                <span className="text-ink-2">{p.name}</span>
+                <span className="font-semibold text-ink">{formatMoney(p.price)}</span>
+              </li>
+            ))}
+            {quote.lineItems.map((l) => (
+              <li key={l.id} className="flex justify-between gap-4">
+                <span className="text-ink-2">{l.label}</span>
+                <span className="font-semibold text-ink">{formatMoney(l.price)}</span>
+              </li>
+            ))}
+            {quote.discount && (
+              <li className="flex justify-between gap-4">
+                <span className="text-ink-2">{quote.discount.label} discount</span>
+                <span className="font-semibold text-ink">-{formatMoney(quote.discount.amount)}</span>
+              </li>
+            )}
+            {quote.custom.length > 0 && (
+              <li className="text-accent-text">
+                + {quote.custom.map((c) => c.label.toLowerCase()).join(", ")} quoted within 24 hrs
+              </li>
+            )}
+            {quote.addonAlone && <li className="text-ink-2">Basement stairs is an add-on. Pair it with any other service.</li>}
+          </ul>
+        )}
+
+        <p className="mt-5 text-sm leading-relaxed text-ink-2">
+          Set prices for a typical home, taxes included. Bigger homes and heavy growth get a free written quote.
+        </p>
+
+        <button type="button" onClick={lockIn} className="btn btn-primary mt-6 w-full">
+          Lock in a free estimate
+          <ArrowRight className="h-5 w-5" aria-hidden />
+        </button>
+        <a
+          href={smsLink}
+          className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 font-semibold text-ink-2 underline-offset-4 hover:text-ink hover:underline"
+        >
+          <MessageSquare className="h-4 w-4" aria-hidden />
+          Text me this quote
+        </a>
       </div>
-    </div>
-  );
-}
-
-/** Dev-only pin editor (`?hotspots=edit`): drag pins, copy the numbers. */
-function startDrag(
-  e: React.PointerEvent<HTMLButtonElement>,
-  id: HotspotId,
-  setPins: React.Dispatch<React.SetStateAction<Hotspots>>
-) {
-  const box = e.currentTarget.parentElement!.getBoundingClientRect();
-  const el = e.currentTarget;
-  el.setPointerCapture(e.pointerId);
-  const move = (ev: PointerEvent) => {
-    const x = Math.round(((ev.clientX - box.left) / box.width) * 1000) / 10;
-    const y = Math.round(((ev.clientY - box.top) / box.height) * 1000) / 10;
-    setPins((prev) => ({ ...prev, [id]: { x: Math.min(100, Math.max(0, x)), y: Math.min(100, Math.max(0, y)) } }));
-  };
-  const up = () => {
-    el.removeEventListener("pointermove", move);
-    el.removeEventListener("pointerup", up);
-  };
-  el.addEventListener("pointermove", move);
-  el.addEventListener("pointerup", up);
-}
-
-function PinEditor({ pins }: { pins: Hotspots }) {
-  const [copied, setCopied] = useState(false);
-  const json = JSON.stringify(pins, null, 2);
-  return (
-    <div className="mt-4 rounded-2xl border border-dashed border-accent bg-surface p-4">
-      <p className="text-sm font-semibold text-ink">Pin editor: drag the pins, then paste this into data/hotspots.ts</p>
-      <pre className="mt-2 max-h-60 overflow-auto rounded-xl bg-surface-2 p-3 text-xs text-ink">{json}</pre>
-      <button
-        type="button"
-        className="btn btn-secondary mt-3"
-        onClick={() => {
-          navigator.clipboard?.writeText(json).then(() => setCopied(true));
-        }}
-      >
-        {copied ? "Copied" : "Copy coordinates"}
-      </button>
     </div>
   );
 }

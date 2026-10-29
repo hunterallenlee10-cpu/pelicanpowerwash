@@ -1,40 +1,65 @@
 import { ArrowDown, MessageSquare } from "lucide-react";
 import { BeforeAfter } from "@/components/ui/BeforeAfter";
 import { business, smsHref } from "@/data/site";
-import { storyChapters, type StoryChapter } from "@/data/story";
-import { srcSet, story, storyImage, type FrameSet } from "@/lib/story";
+import type { Story, StoryBeat, StoryChapter } from "@/data/story";
+import { srcSet, story as manifest, storyImage, type FrameSet } from "@/lib/story";
 import { ScrollStoryDriver, type DriverChapter } from "./ScrollStoryDriver";
 
+/** Scroll distance per unit of chapter weight. */
+const VH_PER_WEIGHT = { phone: 70, desktop: 95 };
+
 /**
- * Hero scroll story, "The Wash". All copy is server-rendered HTML (the H1
- * lives here); the client driver only sets CSS variables while you scroll.
+ * One scroll story: a full-screen sticky stage that cleans each chapter from
+ * dirty to clean as you scroll. All copy is server-rendered HTML; the client
+ * driver only sets CSS variables. Native scroll, no hijacking.
  *
- * Three presentations from one DOM:
- * - motion (default): a sticky stage; each chapter wipes dirty -> clean,
- *   scrubbed by native scroll. Desktop uses video frames on a canvas when
- *   the manifest has them, otherwise the same lane wipe as mobile.
- * - reduced motion / no JS: stacked cards, each with a before/after slider
- *   (STATIC_CSS below).
+ * - Desktop scrubs video frames on a canvas when the manifest has them,
+ *   otherwise wipes between the stills.
+ * - Phones use a CSS lane wipe between 9:16 stills.
+ * - Reduced motion / no JS: stacked cards with before/after sliders.
  */
-export function ScrollStory() {
+/** Chapter start/end as fractions of the story, from their weights. */
+function timeChapters(chapters: StoryChapter[]) {
+  const total = chapters.reduce((s, c) => s + c.weight, 0);
+  const ends = chapters.map((_, i) => chapters.slice(0, i + 1).reduce((s, c) => s + c.weight, 0) / total);
+  return { total, timed: chapters.map((c, i) => ({ ...c, start: i ? ends[i - 1] : 0, end: ends[i] })) };
+}
+
+export function ScrollStory({ story, heading }: { story: Story; heading: "h1" | "h2" }) {
+  const { total, timed } = timeChapters(story.chapters);
+
   const frames: Record<string, FrameSet> = {};
-  for (const ch of storyChapters) {
-    const set = ch.frames ? story.frames[ch.frames] : undefined;
+  for (const ch of story.chapters) {
+    const set = ch.frames ? manifest.frames[ch.frames] : undefined;
     if (set && set.count > 0) frames[ch.id] = set;
   }
-  const mist = storyImage("e2-mist");
-  const driverChapters: DriverChapter[] = storyChapters.map((ch) => ({
-    id: ch.id,
-    start: ch.start,
-    end: ch.end,
-    meter: ch.meter,
-    hud: ch.hud,
-    dir: ch.wipe.dir,
-    order: ch.wipe.order,
+
+  const driverChapters: DriverChapter[] = timed.map((c) => ({
+    id: c.id,
+    start: c.start,
+    end: c.end,
+    still: Boolean(c.still),
+    score: c.hud.score,
+    step: c.hud.step,
+    dir: c.wipe.dir,
+    order: c.wipe.order,
+    beats: c.beats.map((b) => [b.from, b.to] as [number, number]),
   }));
 
+  const first = timed[0];
+
   return (
-    <section id="top" className="story" aria-label="How we clean a house, chapter by chapter">
+    <section
+      id={story.id}
+      className="story"
+      aria-label={story.label}
+      style={
+        {
+          "--story-h-phone": `${Math.round(total * VH_PER_WEIGHT.phone + 100)}svh`,
+          "--story-h-desk": `${Math.round(total * VH_PER_WEIGHT.desktop + 100)}vh`,
+        } as React.CSSProperties
+      }
+    >
       <style>{`@media (prefers-reduced-motion: reduce){${STATIC_CSS}}`}</style>
       <noscript>
         <style>{STATIC_CSS}</style>
@@ -42,37 +67,60 @@ export function ScrollStory() {
       <div className="story-track">
         <div className="story-stage">
           <div className="story-media" aria-hidden>
-            {storyChapters.map((ch, i) => (
-              <StoryLayer key={ch.id} chapter={ch} index={i} hasFrames={Boolean(frames[ch.id])} />
+            {timed.map((ch, i) => (
+              <StoryLayer
+                key={ch.id}
+                chapter={ch}
+                index={i}
+                hasFrames={Boolean(frames[ch.id])}
+                eager={i === 0 && heading === "h1"}
+              />
             ))}
-            {mist && !mist.placeholder && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img className="story-mist" src={mist.sources[mist.sources.length - 1].webp} alt="" loading="lazy" decoding="async" />
-            )}
           </div>
+          <div className="story-shade" aria-hidden />
 
           <div className="story-hud" aria-hidden>
             <svg viewBox="0 0 64 64" className="story-ring">
               <circle cx="32" cy="32" r="27" className="story-ring-track" />
               <circle cx="32" cy="32" r="27" className="story-ring-bar" />
             </svg>
-            <span className="story-hud-num">
-              <span data-hud-num>0</span>
-              <span className="story-hud-pct">%</span>
-            </span>
             <span className="story-hud-text">
-              <span className="story-hud-k">Clean</span>
-              <span data-hud-label>{storyChapters[0].hud}</span>
+              <span className="story-hud-k">Curb appeal</span>
+              <span className="story-hud-num">
+                <span data-hud-num>{first.hud.score[0]}</span>
+                <span className="story-hud-of">/100</span>
+              </span>
+              <span className="story-hud-step" data-hud-step>
+                {first.hud.step}
+              </span>
             </span>
           </div>
           <canvas className="story-spray" aria-hidden />
 
-          {storyChapters.map((ch, i) => (
-            <StoryArticle key={ch.id} chapter={ch} first={i === 0} />
+          {timed.map((ch, ci) => (
+            <div key={ch.id} className="story-chapter" data-chapter={ch.id}>
+              {/* Only shown in the reduced-motion / no-JS layout. */}
+              <StaticMedia chapter={ch} />
+              {ch.beats.map((beat, bi) => {
+                const visibleAtLoad = ci === 0 && bi === 0;
+                const Heading = heading === "h1" && visibleAtLoad ? "h1" : "h2";
+                return (
+                  <StoryArticle
+                    key={bi}
+                    beat={beat}
+                    chapterId={ch.id}
+                    index={bi}
+                    Heading={Heading}
+                    hero={heading === "h1" && visibleAtLoad}
+                    visible={visibleAtLoad}
+                  />
+                );
+              })}
+            </div>
           ))}
         </div>
       </div>
-      <ScrollStoryDriver chapters={driverChapters} frames={frames} />
+      <ScrollStoryDriver sectionId={story.id} chapters={driverChapters} frames={frames} />
     </section>
   );
 }
@@ -81,13 +129,13 @@ function StoryPicture({
   wide,
   tall,
   alt,
-  priority,
+  eager,
   className = "story-pic",
 }: {
   wide: string;
   tall: string;
   alt: string;
-  priority?: boolean;
+  eager?: boolean;
   className?: string;
 }) {
   const w = storyImage(wide);
@@ -104,9 +152,9 @@ function StoryPicture({
         alt={alt}
         width={t.width}
         height={t.height}
-        loading={priority ? "eager" : "lazy"}
-        fetchPriority={priority ? "high" : "auto"}
-        decoding={priority ? "sync" : "async"}
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : "auto"}
+        decoding={eager ? "sync" : "async"}
       />
     </picture>
   );
@@ -122,14 +170,12 @@ function lanePolygon(dir: "up" | "down", order: "ltr" | "rtl") {
   const x = (k: number) => `${((k / lanes) * 100).toFixed(3)}%`;
   const pts: string[] = [];
   if (dir === "up") {
-    // Dirt stays at the top; each lane clears from the bottom up.
     pts.push("0 0", "100% 0");
     for (let k = lanes - 1; k >= 0; k--) {
       const y = `calc((1 - ${s(k)}) * 100%)`;
       pts.push(`${x(k + 1)} ${y}`, `${x(k)} ${y}`);
     }
   } else {
-    // Dirt stays at the bottom; each lane clears from the top down.
     pts.push("0 100%", "100% 100%");
     for (let k = lanes - 1; k >= 0; k--) {
       const y = `calc(${s(k)} * 100%)`;
@@ -139,8 +185,17 @@ function lanePolygon(dir: "up" | "down", order: "ltr" | "rtl") {
   return `polygon(${pts.join(", ")})`;
 }
 
-function StoryLayer({ chapter, index, hasFrames }: { chapter: StoryChapter; index: number; hasFrames: boolean }) {
-  const intro = chapter.id === "intro";
+function StoryLayer({
+  chapter,
+  index,
+  hasFrames,
+  eager,
+}: {
+  chapter: StoryChapter;
+  index: number;
+  hasFrames: boolean;
+  eager: boolean;
+}) {
   return (
     <div
       className="story-layer"
@@ -149,75 +204,110 @@ function StoryLayer({ chapter, index, hasFrames }: { chapter: StoryChapter; inde
       data-show={index === 0 ? "" : undefined}
       style={{ "--z": index } as React.CSSProperties}
     >
-      {!intro && <StoryPicture wide={chapter.clean.wide} tall={chapter.clean.tall} alt="" />}
-      <div className="story-dirty" style={intro ? undefined : { clipPath: lanePolygon(chapter.wipe.dir, chapter.wipe.order) }}>
-        <StoryPicture wide={chapter.dirty.wide} tall={chapter.dirty.tall} alt="" priority={intro} />
+      {!chapter.still && <StoryPicture wide={chapter.clean.wide} tall={chapter.clean.tall} alt="" />}
+      <div
+        className="story-dirty"
+        style={chapter.still ? undefined : { clipPath: lanePolygon(chapter.wipe.dir, chapter.wipe.order) }}
+      >
+        <StoryPicture wide={chapter.dirty.wide} tall={chapter.dirty.tall} alt="" eager={eager} />
       </div>
-      {!intro && <span className="story-edge" />}
+      {!chapter.still && <span className="story-edge" />}
       {hasFrames && <canvas className="story-canvas" data-canvas-for={chapter.id} />}
     </div>
   );
 }
 
-function StoryArticle({ chapter, first }: { chapter: StoryChapter; first: boolean }) {
-  const final = chapter.id === "final";
-  const Heading = first ? "h1" : "h2";
-  const dirtyImg = storyImage(chapter.dirty.wide);
-  const cleanImg = storyImage(chapter.clean.wide);
-  const pick = (img: typeof dirtyImg) => img?.sources[img.sources.length - 1]?.webp ?? "";
+function StaticMedia({ chapter }: { chapter: StoryChapter }) {
+  const dirty = storyImage(chapter.dirty.wide);
+  const clean = storyImage(chapter.clean.wide);
+  const pick = (img: typeof dirty) => img?.sources[img.sources.length - 1]?.webp ?? "";
+  return (
+    <div className="story-ch-media">
+      {chapter.still ? (
+        <div className="story-ch-frame">
+          <StoryPicture wide={chapter.dirty.wide} tall={chapter.dirty.wide} alt={chapter.alt.dirty} />
+        </div>
+      ) : (
+        <BeforeAfter
+          before={{ src: pick(dirty), alt: chapter.alt.dirty }}
+          after={{ src: pick(clean), alt: chapter.alt.clean }}
+          hint={chapter.beats[0]?.title ?? chapter.id}
+          label={`Compare before and after: ${chapter.hud.step}`}
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="aspect-video rounded-2xl"
+        />
+      )}
+    </div>
+  );
+}
 
+function StoryArticle({
+  beat,
+  chapterId,
+  index,
+  Heading,
+  hero,
+  visible,
+}: {
+  beat: StoryBeat;
+  chapterId: string;
+  index: number;
+  Heading: "h1" | "h2";
+  hero: boolean;
+  visible: boolean;
+}) {
+  const ctas = beat.ctas;
   return (
     <article
       className="story-ch"
-      data-ch={chapter.id}
-      data-side={chapter.side}
-      data-on={first ? "" : undefined}
-      style={{ "--o": first ? 1 : 0 } as React.CSSProperties}
+      data-ch={chapterId}
+      data-beat={index}
+      data-side={beat.side}
+      data-hero={hero ? "" : undefined}
+      data-on={visible ? "" : undefined}
+      style={{ "--o": visible ? 1 : 0 } as React.CSSProperties}
     >
-      {/* Only shown in the reduced-motion / no-JS layout. */}
-      <div className="story-ch-media">
-        {first ? (
-          <div className="story-ch-frame">
-            <StoryPicture wide={chapter.dirty.wide} tall={chapter.dirty.wide} alt={chapter.alt.dirty} />
-          </div>
-        ) : (
-          <BeforeAfter
-            before={{ src: pick(dirtyImg), alt: chapter.alt.dirty }}
-            after={{ src: pick(cleanImg), alt: chapter.alt.clean }}
-            hint={chapter.title}
-            label={`Compare before and after: ${chapter.eyebrow ?? chapter.title}`}
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="aspect-video rounded-2xl"
-          />
-        )}
-      </div>
-
       <div className="story-copy">
-        {chapter.eyebrow && <p className="story-eyebrow">{chapter.eyebrow}</p>}
-        <Heading className={first ? "story-h1" : "story-h2"}>{chapter.title}</Heading>
-        <p className="story-body">{chapter.body}</p>
+        {beat.eyebrow && <p className="story-eyebrow">{beat.eyebrow}</p>}
+        <Heading className={hero ? "story-h1" : "story-h2"}>
+          {hero ? <HeroTitle title={beat.title} /> : beat.title}
+        </Heading>
+        <p className="story-body">{beat.body}</p>
 
-        {(first || final) && (
+        {(ctas === "hero" || ctas === "final") && (
           <div className="story-ctas">
             <a href="#instant-price" className="btn btn-primary" data-cta="price">
               Get my price
             </a>
             <a href={smsHref} className="btn story-btn-ghost" data-cta="text">
               <MessageSquare className="h-4 w-4" aria-hidden />
-              {first ? `Text ${business.phone.display}` : "Text us"}
+              {ctas === "hero" ? `Text ${business.phone.display}` : "Text us"}
             </a>
           </div>
         )}
-        {first && (
-          <a href="#instant-price" className="story-skip" data-cta="skip">
-            Skip the show <ArrowDown className="h-4 w-4" aria-hidden />
-          </a>
+        {ctas && typeof ctas === "object" && (
+          <div className="story-ctas">
+            <a href={ctas.href} className="btn btn-primary">
+              {ctas.label}
+            </a>
+          </div>
         )}
-        {final && (
+        {ctas === "hero" && (
+          <p className="story-skip-row">
+            <a href="#try-the-wand" className="story-skip" data-cta="wand">
+              Try the wand yourself
+            </a>
+            <span aria-hidden>·</span>
+            <a href="#instant-price" className="story-skip" data-cta="skip">
+              Skip to my price <ArrowDown className="h-4 w-4" aria-hidden />
+            </a>
+          </p>
+        )}
+        {ctas === "final" && (
           <p className="story-caption">
             Illustrative renders.{" "}
             <a href="#work" className="underline underline-offset-4">
-              See before-and-after photos below
+              See the before and after
             </a>{" "}
             <span aria-hidden>↓</span>
           </p>
@@ -227,17 +317,29 @@ function StoryArticle({ chapter, first }: { chapter: StoryChapter; first: boolea
   );
 }
 
+/** Last two words of the H1 get the accent, like a highlighter. */
+function HeroTitle({ title }: { title: string }) {
+  const words = title.split(" ");
+  const tail = words.splice(-2).join(" ");
+  return (
+    <>
+      {words.join(" ")} <span className="story-accent">{tail}</span>
+    </>
+  );
+}
+
 /**
  * Stacked-card layout for reduced motion and no-JS visitors. Kept as a string
  * so the same rules can sit in a media query and in a <noscript>.
  */
 const STATIC_CSS = `
-.story-track{height:auto}
-.story-stage{position:relative;top:auto;height:auto;overflow:visible;padding:3rem 0 1rem}
-.story-media,.story-hud,.story-spray{display:none}
-.story-ch{position:relative;inset:auto;opacity:1;pointer-events:auto;display:grid;gap:1.5rem;align-items:center;max-width:80rem;margin:0 auto;padding:1.5rem 1rem 2.5rem}
+.story-track{height:auto!important}
+.story-stage{position:relative;top:auto;height:auto;overflow:visible;padding:6rem 0 2rem}
+.story-media,.story-hud,.story-spray,.story-shade{display:none}
+.story-chapter{display:grid;gap:1.25rem;max-width:80rem;margin:0 auto;padding:1.5rem 1rem 2.5rem}
+.story-ch{position:relative;inset:auto;opacity:1!important;pointer-events:auto;display:block;padding:0!important}
 .story-ch::before{display:none}
 .story-ch-media{display:block}
-.story-copy{transform:none;max-width:40rem;padding:0}
-@media (min-width:1024px){.story-ch{grid-template-columns:1.1fr 1fr;gap:3rem;padding:2rem 2rem 3rem}}
+.story-copy{transform:none!important;max-width:40rem;padding:0}
+@media (min-width:1024px){.story-chapter{grid-template-columns:1.1fr 1fr;gap:1.5rem 3rem;padding:2rem 2rem 3rem}.story-ch-media{grid-row:span 4}}
 `;

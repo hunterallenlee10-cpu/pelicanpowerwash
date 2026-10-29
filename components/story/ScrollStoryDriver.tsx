@@ -8,10 +8,14 @@ export type DriverChapter = {
   id: string;
   start: number;
   end: number;
-  meter: number;
-  hud: string;
+  /** A still has no wipe (the hero's "before"). */
+  still: boolean;
+  score: [number, number];
+  step: string;
   dir: "up" | "down";
   order: "ltr" | "rtl";
+  /** [from, to] of each copy beat, as fractions of the chapter. */
+  beats: [number, number][];
 };
 
 const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
@@ -20,33 +24,43 @@ const smooth = (a: number, b: number, v: number) => {
   return t * t * (3 - 2 * t);
 };
 /** Overlap between chapters for the water-sheet transition. */
-const OVERLAP = 0.06;
+const OVERLAP = 0.05;
 const LANES = 6;
 const RING = 2 * Math.PI * 27;
 
 /**
- * Drives the server-rendered story: reads native scroll, writes CSS
+ * Drives one server-rendered story section: reads native scroll, writes CSS
  * variables. No scroll hijacking. Does nothing under reduced motion (the CSS
  * switches to stacked cards).
  */
-export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapter[]; frames: Record<string, FrameSet> }) {
+export function ScrollStoryDriver({
+  sectionId,
+  chapters,
+  frames,
+}: {
+  sectionId: string;
+  chapters: DriverChapter[];
+  frames: Record<string, FrameSet>;
+}) {
   useEffect(() => {
-    const section = document.getElementById("top");
+    const section = document.getElementById(sectionId);
     if (!section) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (reduce.matches) return;
     const desktop = window.matchMedia("(min-width: 1024px)");
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const isHero = sectionId === "top";
 
     const trackEl = section.querySelector<HTMLElement>(".story-track")!;
     const stage = section.querySelector<HTMLElement>(".story-stage")!;
     const layers = chapters.map((c) => section.querySelector<HTMLElement>(`[data-layer="${c.id}"]`)!);
     const edges = layers.map((l) => l.querySelector<HTMLElement>(".story-edge"));
-    const articles = chapters.map((c) => section.querySelector<HTMLElement>(`article[data-ch="${c.id}"]`)!);
+    const articles = chapters.map((c) =>
+      Array.from(section.querySelectorAll<HTMLElement>(`article[data-ch="${c.id}"]`))
+    );
     const ringBar = section.querySelector<SVGCircleElement>(".story-ring-bar");
     const hudNum = section.querySelector<HTMLElement>("[data-hud-num]");
-    const hudLabel = section.querySelector<HTMLElement>("[data-hud-label]");
-    const mist = section.querySelector<HTMLElement>(".story-mist");
+    const hudStep = section.querySelector<HTMLElement>("[data-hud-step]");
 
     // ---- frames (desktop scrub) -------------------------------------------
     type Seq = {
@@ -57,15 +71,25 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
       ctx: CanvasRenderingContext2D | null;
       drawn: number;
       live: boolean;
+      layer: HTMLElement;
     };
     const seqs: Record<string, Seq> = {};
-    for (const c of chapters) {
+    chapters.forEach((c, i) => {
       const set = frames[c.id];
       const canvas = section.querySelector<HTMLCanvasElement>(`canvas[data-canvas-for="${c.id}"]`);
       if (set && canvas) {
-        seqs[c.id] = { set, imgs: new Array(set.count).fill(null), started: false, canvas, ctx: canvas.getContext("2d"), drawn: -1, live: false };
+        seqs[c.id] = {
+          set,
+          imgs: new Array(set.count).fill(null),
+          started: false,
+          canvas,
+          ctx: canvas.getContext("2d"),
+          drawn: -1,
+          live: false,
+          layer: layers[i],
+        };
       }
-    }
+    });
     const framesOn = () => desktop.matches && Object.keys(seqs).length > 0;
 
     let inflight = 0;
@@ -77,7 +101,7 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
       const seq = seqs[id];
       if (!seq || seq.started || !framesOn()) return;
       seq.started = true;
-      // Load every 4th frame first so scrubbing works early, then fill in.
+      // Every 4th frame first so scrubbing works early, then fill in.
       const order: number[] = [];
       for (let i = 0; i < seq.set.count; i += 4) order.push(i);
       for (let i = 0; i < seq.set.count; i++) if (i % 4) order.push(i);
@@ -93,7 +117,7 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
               seq.imgs[i] = img;
               if (!seq.live) {
                 seq.live = true;
-                layers[chapters.findIndex((c) => c.id === id)].dataset.canvas = "";
+                seq.layer.dataset.canvas = "";
               }
               seq.drawn = -1;
               kick();
@@ -114,7 +138,13 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
       }
       return -1;
     };
-    const sizeCanvas = (seq: Seq) => {
+    /**
+     * Draws the frame for progress t. Frames are sparse (the budget keeps
+     * them around 6-12 fps), so the two neighbours are cross-faded, which
+     * keeps scrubbing smooth instead of steppy.
+     */
+    const drawFrame = (seq: Seq, t: number) => {
+      if (!seq.ctx || !seq.live) return;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const w = Math.round(stage.clientWidth * dpr);
       const h = Math.round(stage.clientHeight * dpr);
@@ -123,30 +153,32 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
         seq.canvas.height = h;
         seq.drawn = -1;
       }
-    };
-    const drawFrame = (seq: Seq, t: number) => {
-      if (!seq.ctx || !seq.live) return;
-      sizeCanvas(seq);
-      const want = Math.round(t * (seq.set.count - 1));
-      const idx = nearestFrame(seq, want);
-      if (idx < 0 || idx === seq.drawn) return;
-      const img = seq.imgs[idx]!;
-      const cw = seq.canvas.width;
-      const ch = seq.canvas.height;
-      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-      const dw = img.naturalWidth * scale;
-      const dh = img.naturalHeight * scale;
-      seq.ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
-      seq.drawn = idx;
+      const exact = t * (seq.set.count - 1);
+      const key = Math.round(exact * 20) / 20;
+      if (key === seq.drawn) return;
+      const a = nearestFrame(seq, Math.floor(exact));
+      if (a < 0) return;
+      const b = Math.ceil(exact);
+      const frac = exact - Math.floor(exact);
+      const paint = (img: HTMLImageElement, alpha: number) => {
+        const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+        const dw = img.naturalWidth * scale;
+        const dh = img.naturalHeight * scale;
+        seq.ctx!.globalAlpha = alpha;
+        seq.ctx!.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      };
+      paint(seq.imgs[a]!, 1);
+      if (b !== a && seq.imgs[b] && frac > 0.02) paint(seq.imgs[b]!, frac);
+      seq.ctx.globalAlpha = 1;
+      seq.drawn = key;
     };
 
     // ---- scroll -> progress ----------------------------------------------
     let target = 0;
     let cur = -1;
-    let meterShown = 0;
-    let lastLabel = "";
+    let scoreShown = chapters[0].score[0];
+    let lastStep = "";
     let raf = 0;
-    /** Skip the easing for one jump (keyboard focus), so focused copy is visible at once. */
     let snap = false;
 
     const measure = () => {
@@ -165,11 +197,11 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
         const layer = layers[i];
         const next = chapters[i + 1];
         const cp = clamp((p - c.start) / (c.end - c.start));
-        const w = i === 0 ? 0 : smooth(0.1, 0.85, cp);
+        const w = c.still ? 0 : smooth(0.08, 0.9, cp);
         const begin = i === 0 ? -1 : c.start - OVERLAP / 2;
         const until = next ? next.start + OVERLAP / 2 : 2;
         const show = p >= begin && p < until;
-        const near = p >= c.start - 0.2 && p < c.end + 0.05;
+        const near = p >= c.start - 0.25 && p < c.end + 0.05;
 
         layer.toggleAttribute("data-near", near || show);
         layer.toggleAttribute("data-show", show);
@@ -190,101 +222,120 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
           }
 
           const seq = seqs[c.id];
-          if (seq && framesOn()) drawFrame(seq, c.id === "final" ? cp : smooth(0.05, 0.95, cp));
+          if (seq && framesOn()) drawFrame(seq, c.id === "final" ? cp : smooth(0.04, 0.96, cp));
         }
 
-        // Fetch the next chapter's frames once this one is half done.
-        if (cp > 0.5 && next) loadSeq(next.id);
+        // Fetch the next chapter's frames once this one is a third done.
+        if (cp > 0.33 && next) loadSeq(next.id);
 
-        // Overlay copy: in over 15-40% of the chapter, out over 85-100%.
-        let o: number;
-        if (i === 0) o = 1 - smooth(0.35, 0.9, cp);
-        else {
-          const fin = smooth(0.15, 0.4, cp);
-          const fout = next ? 1 - smooth(0.85, 1, cp) : 1;
-          o = fin * fout;
-        }
-        const art = articles[i];
-        art.style.setProperty("--o", o.toFixed(3));
-        art.toggleAttribute("data-on", o > 0.5);
+        // Copy beats: fade in over the first quarter of the beat, out over the last fifth.
+        articles[i].forEach((art, bi) => {
+          const [from, to] = c.beats[bi];
+          const span = Math.max(0.05, to - from);
+          const lastBeat = !next && bi === c.beats.length - 1;
+          const heroFirst = isHero && i === 0 && bi === 0;
+          const fin = heroFirst ? 1 : smooth(from, from + span * 0.25, cp);
+          const fout = lastBeat ? 1 : 1 - smooth(to - span * 0.2, to, cp);
+          const live = heroFirst ? p < c.end : cp > 0 && cp < 1;
+          const o = live || lastBeat ? fin * fout : 0;
+          art.style.setProperty("--o", o.toFixed(3));
+          art.toggleAttribute("data-on", o > 0.5);
+        });
       });
 
-      if (mist) {
-        // Mist puffs up during each chapter change.
-        let m = 0;
-        for (const c of chapters.slice(1)) {
-          const d = Math.abs(p - c.start) / (OVERLAP / 2);
-          if (d < 1) m = Math.max(m, Math.sin((1 - d) * (Math.PI / 2)));
-        }
-        mist.style.opacity = (m * 0.35).toFixed(3);
-      }
-
-      // Clean meter.
+      // Curb appeal score.
       const c = chapters[current];
-      const prev = current > 0 ? chapters[current - 1].meter : 0;
       const cp = clamp((p - c.start) / (c.end - c.start));
-      const w = current === 0 ? 0 : smooth(0.1, 0.85, cp);
-      const meterTarget = prev + (c.meter - prev) * w;
-      meterShown += (meterTarget - meterShown) * 0.18;
-      if (Math.abs(meterTarget - meterShown) < 0.2) meterShown = meterTarget;
-      if (hudNum) hudNum.textContent = String(Math.round(meterShown));
-      if (ringBar) ringBar.style.strokeDashoffset = String(RING * (1 - meterShown / 100));
-      if (hudLabel && c.hud !== lastLabel) {
-        hudLabel.textContent = c.hud;
-        lastLabel = c.hud;
+      const w = c.still ? 0 : smooth(0.08, 0.9, cp);
+      const scoreTarget = c.score[0] + (c.score[1] - c.score[0]) * w;
+      scoreShown += (scoreTarget - scoreShown) * 0.2;
+      if (Math.abs(scoreTarget - scoreShown) < 0.2) scoreShown = scoreTarget;
+      if (hudNum) hudNum.textContent = String(Math.round(scoreShown));
+      if (ringBar) ringBar.style.strokeDashoffset = String(RING * (1 - scoreShown / 100));
+      if (hudStep && c.step !== lastStep) {
+        hudStep.textContent = c.step;
+        lastStep = c.step;
       }
 
-      if (p > 0.97) trackOnce("story_complete");
-      return Math.abs(meterTarget - meterShown) > 0.01;
+      if (!isHero && p > 0.97) trackOnce("story_complete");
+      return Math.abs(scoreTarget - scoreShown) > 0.01;
     };
 
     const tick = () => {
       raf = 0;
-      const lerp = desktop.matches && !snap ? 0.15 : 1;
+      const lerp = desktop.matches && !snap ? 0.16 : 1;
       snap = false;
       cur = cur < 0 ? target : cur + (target - cur) * lerp;
       if (Math.abs(target - cur) < 0.0004) cur = target;
-      const meterMoving = render(cur);
-      if (cur !== target || meterMoving) kick();
+      const moving = render(cur);
+      if (cur !== target || moving) kick();
     };
     function kick() {
       if (!raf) raf = requestAnimationFrame(tick);
     }
 
+    // Only run while the section is near the viewport.
+    let nearView = true;
     const onScroll = () => {
+      if (!nearView) return;
       measure();
       kick();
     };
     const onResize = () => {
       for (const s of Object.values(seqs)) s.drawn = -1;
-      onScroll();
+      measure();
+      kick();
     };
+    const viewIO = new IntersectionObserver(
+      ([entry]) => {
+        nearView = entry.isIntersecting;
+        if (nearView) onResize();
+      },
+      { rootMargin: "100% 0px" }
+    );
+    viewIO.observe(section);
 
     measure();
     kick();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
 
-    // Start the first chapter's frames after the page has loaded.
-    const startFrames = () => loadSeq(chapters[1].id);
-    if (document.readyState === "complete") startFrames();
-    else window.addEventListener("load", startFrames, { once: true });
+    // Hero frames load after the page; later stories start when they get close.
+    const firstMoving = chapters.find((c) => !c.still);
+    const startFrames = () => firstMoving && loadSeq(firstMoving.id);
+    let loadIO: IntersectionObserver | null = null;
+    if (isHero) {
+      if (document.readyState === "complete") startFrames();
+      else window.addEventListener("load", startFrames, { once: true });
+    } else {
+      loadIO = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            startFrames();
+            loadIO?.disconnect();
+          }
+        },
+        { rootMargin: "150% 0px" }
+      );
+      loadIO.observe(section);
+    }
     const onDesktop = () => {
-      if (desktop.matches) startFrames();
+      if (desktop.matches && isHero) startFrames();
       onResize();
     };
     desktop.addEventListener("change", onDesktop);
 
-    // Keyboard users: focusing a chapter's link scrolls that chapter in.
+    // Keyboard users: focusing a beat's link scrolls that beat into view.
     const onFocus = (e: FocusEvent) => {
       const art = (e.target as HTMLElement).closest<HTMLElement>("article[data-ch]");
-      if (!art) return;
-      const i = articles.indexOf(art);
-      if (i < 0 || art.hasAttribute("data-on")) return;
-      const c = chapters[i];
+      if (!art || art.hasAttribute("data-on")) return;
+      const ci = chapters.findIndex((c) => c.id === art.dataset.ch);
+      if (ci < 0) return;
+      const c = chapters[ci];
+      const [from, to] = c.beats[Number(art.dataset.beat) || 0];
       const r = trackEl.getBoundingClientRect();
       const total = r.height - stage.clientHeight;
-      const mid = c.start + (c.end - c.start) * (i === chapters.length - 1 ? 0.9 : 0.6);
+      const mid = c.start + (c.end - c.start) * (from + (to - from) * 0.6);
       window.scrollTo({ top: window.scrollY + r.top + total * mid, behavior: "instant" });
       measure();
       snap = true;
@@ -294,8 +345,7 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
 
     const onClick = (e: MouseEvent) => {
       const a = (e.target as HTMLElement).closest<HTMLElement>("[data-cta]");
-      if (!a) return;
-      if (a.dataset.cta === "skip") track("skip_show");
+      if (a?.dataset.cta === "skip") track("skip_show");
     };
     section.addEventListener("click", onClick);
 
@@ -350,10 +400,10 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
       if (!sprayRaf) sprayRaf = requestAnimationFrame(sprayTick);
     };
     stage.addEventListener("pointermove", onMove);
-    const io = new IntersectionObserver(([entry]) => {
+    const stageIO = new IntersectionObserver(([entry]) => {
       stageVisible = entry.isIntersecting;
     });
-    io.observe(stage);
+    stageIO.observe(stage);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
@@ -363,12 +413,14 @@ export function ScrollStoryDriver({ chapters, frames }: { chapters: DriverChapte
       section.removeEventListener("focusin", onFocus);
       section.removeEventListener("click", onClick);
       stage.removeEventListener("pointermove", onMove);
-      io.disconnect();
+      stageIO.disconnect();
+      viewIO.disconnect();
+      loadIO?.disconnect();
       cancelAnimationFrame(raf);
       cancelAnimationFrame(sprayRaf);
       queue.length = 0;
     };
-  }, [chapters, frames]);
+  }, [sectionId, chapters, frames]);
 
   return null;
 }

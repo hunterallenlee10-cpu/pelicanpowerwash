@@ -1,44 +1,28 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens. Colors come from the logo: navy shirt, teal water, white.
- * Light is the default; dark follows the visitor's system setting.
+ * Design tokens. Always dark, like a night-time showroom: near-black canvas,
+ * white type, Pelican's bay-water teal as the one accent (buttons, meter,
+ * highlights). Colors come from the logo: navy shirt, teal water, white.
  *
  * Shape rule, used everywhere: buttons and chips are full pills, inputs are
  * rounded-xl, panels and photos are rounded-2xl.
  */
 :root {
-  --canvas: #f4f7f9;
-  --surface: #ffffff;
-  --surface-2: #e9f0f4;
-  --ink: #0e2440;
-  --ink-2: #4b5d70;
-  --line: #d6e0e7;
-  --accent: #0a7585;
-  --accent-hover: #086674;
-  --on-accent: #ffffff;
-  --accent-soft: #e0f1f4;
-  --accent-text: #0a6b7a;
-  --danger: #b42318;
-  --danger-soft: #fdecea;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #0a1626;
-    --surface: #10213a;
-    --surface-2: #162b47;
-    --ink: #e6edf3;
-    --ink-2: #9db0c3;
-    --line: #22395a;
-    --accent: #45cedd;
-    --accent-hover: #6ad9e5;
-    --on-accent: #06222b;
-    --accent-soft: #123a4c;
-    --accent-text: #6ad9e5;
-    --danger: #ff8a7f;
-    --danger-soft: #3a1717;
-  }
+  color-scheme: dark;
+  --canvas: #07090c;
+  --surface: #0f1318;
+  --surface-2: #161c23;
+  --ink: #f2f5f7;
+  --ink-2: #9aa6b2;
+  --line: #232b34;
+  --accent: #3fd0e0;
+  --accent-hover: #6ddbe8;
+  --on-accent: #04191d;
+  --accent-soft: #0e2a31;
+  --accent-text: #5fd9e6;
+  --danger: #ff8a7f;
+  --danger-soft: #3a1717;
 }
 
 @theme inline {
@@ -59,6 +43,7 @@
   --color-navy: #0b1d33;
   --color-navy-2: #132c4a;
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @layer base {
@@ -101,6 +86,15 @@
 }
 
 @layer components {
+  /* Small mono uppercase label: nav links, eyebrows, HUD, the bottom bar. */
+  .label-mono {
+    @apply font-mono text-[0.7rem] font-medium tracking-[0.14em] uppercase;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[0.72rem] font-semibold tracking-[0.16em] text-accent-text uppercase;
+  }
+
   .container-page {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
@@ -178,14 +172,27 @@
 }
 .story-track {
   position: relative;
-  height: 300svh;
+  height: var(--story-h-phone, 300svh);
 }
 .story-stage {
   position: sticky;
-  top: 72px;
-  height: calc(100svh - 72px);
+  top: 0;
+  height: 100svh;
   overflow: hidden;
   isolation: isolate;
+}
+.story-chapter {
+  display: contents;
+}
+/* Keeps the floating nav and the HUD readable over bright photos. */
+.story-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgb(4 8 12 / 0.55), transparent 22%),
+    linear-gradient(to top, rgb(4 8 12 / 0.35), transparent 30%);
 }
 .story-media {
   position: absolute;
@@ -231,7 +238,7 @@
 }
 @media (min-width: 1024px) {
   .story-track {
-    height: 420vh;
+    height: var(--story-h-desk, 420vh);
   }
   .story-layer[data-canvas] .story-canvas {
     display: block;
@@ -304,13 +311,13 @@
 .story-hud {
   position: absolute;
   z-index: 60;
-  top: 0.875rem;
+  top: 5rem;
   left: 1rem;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0.9rem 0.4rem 0.4rem;
-  border-radius: 999px;
+  gap: 0.7rem;
+  padding: 0.55rem 1rem 0.55rem 0.6rem;
+  border-radius: 1rem;
   background: rgb(6 16 29 / 0.62);
   border: 1px solid rgb(255 255 255 / 0.14);
   -webkit-backdrop-filter: blur(10px);
@@ -330,7 +337,7 @@
   stroke: rgb(255 255 255 / 0.16);
 }
 .story-ring-bar {
-  stroke: #45cedd;
+  stroke: var(--accent);
   stroke-linecap: round;
   stroke-dasharray: 169.65;
   stroke-dashoffset: 169.65;
@@ -338,27 +345,34 @@
 .story-hud-num {
   font-stretch: 118%;
   font-weight: 800;
-  font-size: 1.25rem;
+  font-size: 1.45rem;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
-  min-width: 3.4ch;
 }
-.story-hud-pct {
-  font-size: 0.8rem;
-  opacity: 0.7;
-  margin-left: 1px;
+.story-hud-of {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.65;
+  margin-left: 2px;
 }
 .story-hud-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.15;
-  font-size: 0.8rem;
-  font-weight: 600;
+  line-height: 1.2;
 }
-.story-hud-k {
-  font-size: 0.65rem;
+.story-hud-k,
+.story-hud-step {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #9fd9e2;
+}
+.story-hud-k {
+  color: rgb(255 255 255 / 0.65);
+}
+.story-hud-step {
+  color: var(--accent-text);
 }
 .story-spray {
   position: absolute;
@@ -391,8 +405,8 @@
   background: linear-gradient(to top, rgb(4 12 24 / 0.9) 0%, rgb(4 12 24 / 0.65) 38%, transparent 70%);
   pointer-events: none;
 }
-.story-ch[data-ch="intro"] {
-  padding-bottom: 1.5rem;
+.story-ch[data-hero] {
+  padding-bottom: calc(1.25rem + 76px);
 }
 .story-ch-media {
   display: none;
@@ -409,11 +423,15 @@
   transform: translateY(calc((1 - var(--o, 0)) * 18px));
 }
 .story-eyebrow {
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #9fd9e2;
+  color: var(--accent-text);
+}
+.story-accent {
+  color: var(--accent);
 }
 .story-h1,
 .story-h2 {
@@ -424,7 +442,8 @@
   text-wrap: balance;
 }
 .story-h1 {
-  font-size: clamp(2.35rem, 8.5vw, 4.4rem);
+  margin-top: 0.6rem;
+  font-size: clamp(2.4rem, 8.5vw, 4.8rem);
 }
 .story-h2 {
   margin-top: 0.5rem;
@@ -455,8 +474,15 @@
   background: rgb(255 255 255 / 0.18);
   border-color: rgb(255 255 255 / 0.7);
 }
+.story-skip-row {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.75rem;
+  color: rgb(255 255 255 / 0.5);
+}
 .story-skip {
-  margin-top: 0.9rem;
   display: inline-flex;
   min-height: 48px;
   align-items: center;
@@ -487,117 +513,37 @@
 }
 @media (min-width: 1024px) {
   .story-hud {
-    top: 1.5rem;
-    left: 2rem;
+    top: 6rem;
+    left: max(2rem, calc((100vw - 80rem) / 2 + 2rem));
   }
+  /* Copy sits low in a corner, like a film title, clear of the bottom bar. */
   .story-ch {
-    align-items: center;
-    padding: 0 max(2rem, calc((100vw - 80rem) / 2 + 2rem));
+    align-items: flex-end;
+    padding: 0 max(2rem, calc((100vw - 80rem) / 2 + 2rem)) 7.5rem;
   }
-  .story-ch[data-ch="intro"] {
-    padding-bottom: 0;
+  .story-ch[data-hero] {
+    align-items: center;
+    padding-bottom: 2rem;
   }
   .story-ch::before {
-    background: linear-gradient(90deg, rgb(4 12 24 / 0.82) 0%, rgb(4 12 24 / 0.55) 35%, transparent 62%);
+    background: radial-gradient(120% 90% at 0% 100%, rgb(4 8 12 / 0.85) 0%, rgb(4 8 12 / 0.5) 38%, transparent 66%);
   }
   .story-ch[data-side="right"] {
     justify-content: flex-end;
+    text-align: right;
+  }
+  .story-ch[data-side="right"] .story-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
   }
   .story-ch[data-side="right"]::before {
-    background: linear-gradient(270deg, rgb(4 12 24 / 0.82) 0%, rgb(4 12 24 / 0.55) 35%, transparent 62%);
+    background: radial-gradient(120% 90% at 100% 100%, rgb(4 8 12 / 0.85) 0%, rgb(4 8 12 / 0.5) 38%, transparent 66%);
+  }
+  .story-ch[data-hero]::before {
+    background: linear-gradient(90deg, rgb(4 8 12 / 0.85) 0%, rgb(4 8 12 / 0.55) 40%, transparent 70%);
   }
   .story-body {
     font-size: 1.2rem;
-  }
-}
-
-/* ------------------------------------------------------------------------
- * Instant price house (components/story/InstantPriceClient.tsx). Grime
- * overlays on the SVG house wash off when their area is selected.
- * --------------------------------------------------------------------- */
-.hs-dirt {
-  transition: opacity 0.8s ease;
-}
-[data-sel~="siding"] .hs-dirt[data-area="siding"],
-[data-sel~="roof"] .hs-dirt[data-area="roof"],
-[data-sel~="driveway"] .hs-dirt[data-area="driveway"],
-[data-sel~="walkway"] .hs-dirt[data-area="walkway"],
-[data-sel~="patio"] .hs-dirt[data-area="patio"],
-[data-sel~="deck"] .hs-dirt[data-area="deck"],
-[data-sel~="fence"] .hs-dirt[data-area="fence"],
-[data-sel~="basement"] .hs-dirt[data-area="basement"],
-[data-sel~="trash"] .hs-dirt[data-area="trash"] {
-  opacity: 0;
-}
-.hs-pin {
-  position: absolute;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  transform: translate(-50%, -50%);
-  -webkit-tap-highlight-color: transparent;
-}
-.hs-dot {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 0.94);
-  color: #0b1d33;
-  box-shadow:
-    0 0 0 4px rgb(69 206 221 / 0.35),
-    0 6px 14px rgb(0 0 0 / 0.35);
-  transition:
-    background-color 0.2s,
-    box-shadow 0.3s,
-    transform 0.2s;
-  animation: hs-pulse 2.6s ease-in-out infinite;
-}
-.hs-pin:hover .hs-dot {
-  transform: scale(1.08);
-}
-.hs-pin.is-on .hs-dot {
-  background: #45cedd;
-  color: #06222b;
-  box-shadow:
-    0 0 0 6px rgb(69 206 221 / 0.4),
-    0 0 26px 8px rgb(69 206 221 / 0.5);
-  animation: none;
-}
-.hs-chip {
-  position: absolute;
-  left: calc(50% + 18px);
-  top: 50%;
-  display: none;
-  transform: translateY(-50%);
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  background: rgb(6 16 29 / 0.85);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  white-space: nowrap;
-  pointer-events: none;
-}
-@media (min-width: 640px) {
-  .hs-pin.is-on .hs-chip,
-  .hs-pin:hover .hs-chip {
-    display: block;
-  }
-}
-@keyframes hs-pulse {
-  50% {
-    box-shadow:
-      0 0 0 9px rgb(69 206 221 / 0.12),
-      0 6px 14px rgb(0 0 0 / 0.35);
-  }
-}
-@media (min-width: 640px) {
-  .hs-dot {
-    width: 34px;
-    height: 34px;
   }
 }

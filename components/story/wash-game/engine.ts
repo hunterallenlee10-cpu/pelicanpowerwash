@@ -7,6 +7,7 @@
  * within one stroke never compounds but a second pass does. On pointer-up
  * the result becomes the new base.
  */
+import { STAINS, type StainId } from "@/data/game-stains";
 import {
   TH,
   TW,
@@ -15,15 +16,24 @@ import {
   drawCover,
   loadImage,
   makeCanvas,
+  multiplyGrime,
   proceduralClean,
-  proceduralDirt,
+  proceduralGrimeMap,
 } from "./textures";
 import { TOOLS, type Tool } from "./tools";
 
 export type Textures = { clean: string | null; dirty: string | null; grime: string | null };
 
+/** Visible part of the 1280x720 texture, in texture pixels. */
+export type View = { vx: number; vy: number; vw: number; vh: number };
+
 export type EngineCallbacks = {
   onStart: () => void;
+  /** Per-stain share cleaned (0 to 1), sampled with the overall %. */
+  onStains: (progress: Record<StainId, number>) => void;
+  onView: (view: View) => void;
+  /** Water on or off (for the spray sound). */
+  onSpray: (active: boolean) => void;
   onDamage: (total: number) => void;
   onSample: (pct: number, seconds: number) => void;
   onComplete: (seconds: number, damage: number) => void;
@@ -53,6 +63,10 @@ export class WashEngine {
   private mask = makeCanvas();
   private tmp = makeCanvas();
   private sampler = makeCanvas(SAMPLE_W, 72);
+  /** Whole-texture sampler for per-stain progress. */
+  private full = makeCanvas(SAMPLE_W, 72);
+  private fullInit: Uint8ClampedArray | null = null;
+  private spraying = false;
 
   private tool: Tool = TOOLS[0];
   private pts: Pt[] = [];
@@ -114,18 +128,24 @@ export class WashEngine {
 
     if (ci && di) {
       dirtFromDiff(this.clean, di, this.initial);
-    } else if (ci && gi) {
-      // Clean slab with the grime map multiplied over it.
-      const m = makeCanvas();
-      const mctx = ctx2d(m);
-      mctx.drawImage(this.clean, 0, 0);
-      mctx.globalCompositeOperation = "multiply";
-      drawCover(mctx, gi);
-      dirtFromDiff(this.clean, m, this.initial);
     } else {
-      proceduralDirt(ctx2d(this.initial, true));
+      // Grime map (the Higgsfield one, or ours) multiplied over the clean
+      // slab, so the concrete's texture shows through the dirt.
+      const grime = makeCanvas();
+      const gctx = ctx2d(grime, true);
+      if (gi) {
+        gctx.fillStyle = "#fff";
+        gctx.fillRect(0, 0, TW, TH);
+        drawCover(gctx, gi);
+      } else {
+        proceduralGrimeMap(gctx);
+      }
+      const dirty = makeCanvas();
+      multiplyGrime(this.clean, grime, dirty);
+      dirtFromDiff(this.clean, dirty, this.initial);
     }
     this.copy(this.initial, this.base);
+    this.fullInit = this.fullGrid(this.initial);
     this.ready = true;
     this.resize();
   }
@@ -150,6 +170,7 @@ export class WashEngine {
     this.demoUsed = false;
     window.clearInterval(this.timer);
     this.timer = 0;
+    this.measureStains();
     this.request();
   }
 
@@ -184,6 +205,7 @@ export class WashEngine {
   }
 
   destroy() {
+    if (this.spraying) this.cb.onSpray(false);
     cancelAnimationFrame(this.raf);
     window.clearInterval(this.timer);
     this.io.disconnect();
@@ -426,6 +448,7 @@ export class WashEngine {
     const pct = Math.max(0, Math.min(1, 1 - sum / this.initSum));
     const secs = (performance.now() - this.startedAt) / 1000;
     this.cb.onSample(pct, secs);
+    this.measureStains();
     if (pct >= DONE_AT && !this.drawing) {
       this.finished = true;
       this.demo = null;
@@ -435,6 +458,40 @@ export class WashEngine {
       this.cb.onComplete(secs, this.damage);
       this.request();
     }
+  }
+
+  private fullGrid(src: HTMLCanvasElement): Uint8ClampedArray {
+    const s = ctx2d(this.full, true);
+    s.clearRect(0, 0, this.full.width, this.full.height);
+    s.imageSmoothingEnabled = true;
+    s.imageSmoothingQuality = "high";
+    s.drawImage(src, 0, 0, TW, TH, 0, 0, this.full.width, this.full.height);
+    return s.getImageData(0, 0, this.full.width, this.full.height).data;
+  }
+
+  private measureStains() {
+    if (!this.fullInit) return;
+    const cur = this.fullGrid(this.drawing ? this.live : this.base);
+    const W = this.full.width;
+    const H = this.full.height;
+    const out = {} as Record<StainId, number>;
+    for (const st of STAINS) {
+      const cx = (st.x / 100) * W;
+      const cy = (st.y / 100) * H;
+      const rad = (st.r / 100) * W;
+      let a = 0;
+      let b = 0;
+      for (let y = Math.max(0, Math.floor(cy - rad)); y < Math.min(H, Math.ceil(cy + rad)); y++) {
+        for (let x = Math.max(0, Math.floor(cx - rad)); x < Math.min(W, Math.ceil(cx + rad)); x++) {
+          if ((x - cx) ** 2 + (y - cy) ** 2 > rad * rad) continue;
+          const i = (y * W + x) * 4 + 3;
+          a += this.fullInit[i];
+          b += Math.min(cur[i], this.fullInit[i]);
+        }
+      }
+      out[st.id] = a > 0 ? 1 - b / a : 1;
+    }
+    this.cb.onStains(out);
   }
 
   // ---------------------------------------------------------------- render
@@ -451,6 +508,7 @@ export class WashEngine {
     const vw = cssW / scale;
     const vh = cssH / scale;
     this.view = { k: scale * dpr, vx: (TW - vw) / 2, vy: (TH - vh) / 2, vw, vh };
+    this.cb.onView({ vx: this.view.vx, vy: this.view.vy, vw, vh });
     if (this.ready) {
       this.sampler.height = Math.max(1, Math.round((SAMPLE_W * vh) / vw));
       this.initGrid = this.grid(this.initial);
@@ -479,6 +537,11 @@ export class WashEngine {
       this.strokeDirty = false;
     }
     this.draw();
+    const spraying = !this.finished && !this.tool.soap && (this.drawing || !!this.demo);
+    if (spraying !== this.spraying) {
+      this.spraying = spraying;
+      this.cb.onSpray(spraying);
+    }
     if (this.demo) this.request();
   };
 
@@ -530,28 +593,47 @@ export class WashEngine {
 
     const h = this.hover;
     if (!h || this.finished) return;
-    const showCursor = this.demo || this.pointerType === "mouse" || this.pointerType === "pen";
+    const showCursor = this.demo || this.drawing || this.pointerType === "mouse" || this.pointerType === "pen";
     if (!showCursor) return;
     const rad = this.tool.width / 2;
-    if (this.demo) {
-      // The surface cleaner's hood
-      d.fillStyle = "rgba(10,117,133,0.28)";
+    if (this.tool.id === "surface") {
+      // The surface cleaner: a round steel hood with a hub.
+      const g = d.createRadialGradient(h.x - rad * 0.3, h.y - rad * 0.35, rad * 0.1, h.x, h.y, rad);
+      g.addColorStop(0, "rgba(250,252,253,0.95)");
+      g.addColorStop(0.55, "rgba(196,204,211,0.92)");
+      g.addColorStop(1, "rgba(120,130,140,0.92)");
+      d.fillStyle = g;
       d.beginPath();
-      d.arc(h.x, h.y, rad, 0, Math.PI * 2);
+      d.arc(h.x, h.y, rad * 0.92, 0, Math.PI * 2);
+      d.fill();
+      d.lineWidth = 3 / k;
+      d.strokeStyle = "rgba(40,46,52,0.7)";
+      d.stroke();
+      d.fillStyle = "rgba(60,66,72,0.9)";
+      d.beginPath();
+      d.arc(h.x, h.y, rad * 0.16, 0, Math.PI * 2);
+      d.fill();
+      // Handle running off toward the operator.
+      d.strokeStyle = "rgba(30,34,38,0.85)";
+      d.lineWidth = 6 / k + 2;
+      d.beginPath();
+      d.moveTo(h.x, h.y);
+      d.lineTo(h.x - rad * 0.2, h.y + rad * 2.2);
+      d.stroke();
+    } else {
+      d.lineWidth = 3 / k;
+      d.strokeStyle = "rgba(11,29,51,0.55)";
+      d.beginPath();
+      d.arc(h.x, h.y, Math.max(rad, 6), 0, Math.PI * 2);
+      d.stroke();
+      d.lineWidth = 1.5 / k;
+      d.strokeStyle = "#ffffff";
+      d.stroke();
+      d.fillStyle = this.tool.color;
+      d.beginPath();
+      d.arc(h.x, h.y, 4 / k + 2, 0, Math.PI * 2);
       d.fill();
     }
-    d.lineWidth = 3 / k;
-    d.strokeStyle = "rgba(11,29,51,0.55)";
-    d.beginPath();
-    d.arc(h.x, h.y, Math.max(rad, 6), 0, Math.PI * 2);
-    d.stroke();
-    d.lineWidth = 1.5 / k;
-    d.strokeStyle = "#ffffff";
-    d.stroke();
-    d.fillStyle = this.tool.color;
-    d.beginPath();
-    d.arc(h.x, h.y, 4 / k + 2, 0, Math.PI * 2);
-    d.fill();
     // A little spray while the trigger is held
     if (this.drawing && !this.reduced && !this.tool.soap) {
       d.fillStyle = "rgba(235,248,255,0.75)";
