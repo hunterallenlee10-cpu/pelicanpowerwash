@@ -49,7 +49,7 @@ export function QuoteBar() {
       data-quote-bar
       inert={!visible}
       aria-hidden={!visible}
-      className={`fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ease-out md:inset-x-auto md:bottom-4 md:left-1/2 md:w-[min(56rem,calc(100vw-2rem))] md:-translate-x-1/2 ${
+      className={`fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ease-out md:inset-x-auto md:bottom-4 md:left-1/2 md:w-[min(64rem,calc(100vw-2rem))] md:-translate-x-1/2 ${
         visible ? "translate-y-0" : "translate-y-[140%]"
       }`}
     >
@@ -73,12 +73,15 @@ export function QuoteBar() {
       {/* Tablets and up: slim trust bar */}
       <div className="hidden items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#0b0e12]/90 py-2 pr-2 pl-5 shadow-[0_18px_50px_-18px_rgb(0_0_0/0.8)] backdrop-blur-md md:flex">
         <p className="label-mono truncate text-white/70">
-          Free written quotes <span className="text-white/30">·</span> Locally owned{" "}
-          <span className="text-white/30">·</span> Reply in {business.responseTime}
+          Free written quotes <span className="text-white/30">·</span> Locally owned
+          <span className="hidden lg:inline">
+            {" "}
+            <span className="text-white/30">·</span> Reply in {business.responseTime}
+          </span>
           <span className="ml-3 text-white">Packages from ${fromPrice}</span>
         </p>
         <div className="flex shrink-0 items-center gap-2">
-          <a href={smsHref} className="label-mono hidden px-3 py-2 text-white/80 hover:text-white lg:inline-flex">
+          <a href={smsHref} className="label-mono hidden px-3 py-2 text-white/80 hover:text-white 2xl:inline-flex">
             Text {business.phone.display}
           </a>
           <Link href={price.hasPrice ? "/#instant-price" : "/#quote-form"} className="btn btn-primary min-h-11 px-5 py-2">

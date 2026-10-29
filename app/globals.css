@@ -423,6 +423,7 @@
   transform: translateY(calc((1 - var(--o, 0)) * 18px));
 }
 .story-eyebrow {
+  line-height: 1.5;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 600;
@@ -522,8 +523,7 @@
     padding: 0 max(2rem, calc((100vw - 80rem) / 2 + 2rem)) 7.5rem;
   }
   .story-ch[data-hero] {
-    align-items: center;
-    padding-bottom: 2rem;
+    padding-bottom: 6.5rem;
   }
   .story-ch::before {
     background: radial-gradient(120% 90% at 0% 100%, rgb(4 8 12 / 0.85) 0%, rgb(4 8 12 / 0.5) 38%, transparent 66%);

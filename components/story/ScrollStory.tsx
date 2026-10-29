@@ -341,5 +341,6 @@ const STATIC_CSS = `
 .story-ch::before{display:none}
 .story-ch-media{display:block}
 .story-copy{transform:none!important;max-width:40rem;padding:0}
+.story-ch[data-side=right]{text-align:left}.story-ch[data-side=right] .story-copy{align-items:flex-start}
 @media (min-width:1024px){.story-chapter{grid-template-columns:1.1fr 1fr;gap:1.5rem 3rem;padding:2rem 2rem 3rem}.story-ch-media{grid-row:span 4}}
 `;

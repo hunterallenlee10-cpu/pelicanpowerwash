@@ -17,6 +17,8 @@ const plexMono = IBM_Plex_Mono({
   weight: ['500', '600'],
   variable: '--font-plex-mono',
   display: 'swap',
+  // Only small labels use it; don't let it compete with the headline font.
+  preload: false,
 })
 
 const title = 'Pelican Power Wash | Pressure Washing in St. Mary\'s County, MD'

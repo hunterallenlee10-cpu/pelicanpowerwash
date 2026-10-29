@@ -70,7 +70,7 @@ export const driveStory: Story = {
           from: 0,
           to: 0.75,
           side: "left",
-          eyebrow: "Southern Maryland · Pressure & soft washing",
+          eyebrow: "St. Mary's · Calvert · Charles",
           title: "Pressure washing for Southern Maryland.",
           body: "This house hasn't been washed in years. Keep scrolling and watch the driveway, the roof and the siding come clean. Then grab the wand and try it yourself.",
           ctas: "hero",
