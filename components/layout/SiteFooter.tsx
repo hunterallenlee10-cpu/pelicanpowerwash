@@ -162,6 +162,7 @@ export function SiteFooter() {
             {business.licenseNumber && ` License #${business.licenseNumber}.`}
           </p>
           <p>A {business.parentCompany} venture</p>
+          <a href="https://www.leeenterprisesunlimited.org/best-website-designer-in-maryland" className="hover:text-white">Website by Lee Enterprises Unlimited</a>
         </div>
       </div>
     </footer>
